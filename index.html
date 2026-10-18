@@ -1,0 +1,5841 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STAFF HRMS — Sistem Pengurusan Cuti & Kehadiran Pekerja</title>
+
+<!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- FIREBASE STAFF HRMS -->
+<script type="module">
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+
+  import { getAuth } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
+
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDEOjr8kEnM7bt2sg43o9jE6m0jVd93MLc",
+    authDomain: "sjam-cuti-dan-kehadiran-staff.firebaseapp.com",
+    projectId: "sjam-cuti-dan-kehadiran-staff",
+    storageBucket: "sjam-cuti-dan-kehadiran-staff.firebasestorage.app",
+    messagingSenderId: "609044119850",
+    appId: "1:609044119850:web:47af49d419d456186b1e53"
+  };
+
+  const firebaseApp = initializeApp(firebaseConfig);
+
+  const firebaseAuth = getAuth(firebaseApp);
+  const firebaseDB = getFirestore(firebaseApp);
+
+  window.hrmsFirebase = {
+    app: firebaseApp,
+    auth: firebaseAuth,
+    db: firebaseDB
+  };
+
+</script>
+<!-- TAMAT FIREBASE STAFF HRMS -->
+<style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #172554;
+      --primary-light: #eff6ff;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-400: #94a3b8;
+      --slate-300: #cbd5e1;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+      --white: #ffffff;
+
+--success: #059669;
+      --success-light: #ecfdf5;
+      --warning: #d97706;
+      --warning-light: #fffbeb;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --info: #0284c7;
+      --info-light: #f0f9ff;
+
+--radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+
+--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+--sidebar-width: 260px;
+      --header-height: 70px;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+* {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+body {
+      background-color: var(--slate-100);
+      color: var(--slate-800);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+/* Auth Wrapper */
+    #auth-screen {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh; 
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    }
+
+.auth-card {
+      background: var(--white);
+      width: 100%;
+      max-width: 480px;
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      box-shadow: var(--shadow-xl);
+      animation: fadeIn 0.25s ease-out;
+    }
+
+@keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+.brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+.brand-logo-icon {
+      background: var(--accent);
+      color: var(--white);
+      padding: 10px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+.brand-logo h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--slate-900);
+      line-height: 1.2;
+    }
+
+.brand-logo p {
+      font-size: 12px;
+      color: var(--slate-500);
+      font-weight: 400;
+    }
+
+.form-group {
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+.form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 6px;
+    }
+
+.input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+.form-control {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--slate-300);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      color: var(--slate-800);
+      background-color: var(--white);
+      transition: all 0.2s;
+    }
+
+.form-control:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+.input-toggle-btn {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--slate-400);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+
+.input-toggle-btn:hover {
+      color: var(--slate-700);
+    }
+
+.password-strength-bar {
+      height: 4px;
+      width: 100%;
+      background-color: var(--slate-200);
+      border-radius: var(--radius-full);
+      margin-top: 6px;
+      overflow: hidden;
+      display: flex;
+    }
+
+.password-strength-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+.strength-weak { width: 33%; background-color: var(--danger); }
+    .strength-medium { width: 66%; background-color: var(--warning); }
+    .strength-strong { width: 100%; background-color: var(--success); }
+
+.strength-text {
+      font-size: 11px;
+      color: var(--slate-500);
+      margin-top: 4px;
+      display: block;
+      text-align: right;
+    }
+
+.btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 11px 20px;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+.btn-primary {
+      background-color: var(--accent);
+      color: var(--white);
+    }
+    .btn-primary:hover {
+      background-color: var(--accent-hover);
+      box-shadow: var(--shadow-md);
+    }
+
+.btn-outline-primary {
+      background-color: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+    }
+    .btn-outline-primary:hover {
+      background-color: var(--primary-light);
+    }
+
+.btn-success {
+      background-color: var(--success);
+      color: var(--white);
+    }
+    .btn-success:hover {
+      background-color: #047857;
+    }
+
+.btn-danger {
+      background-color: var(--danger);
+      color: var(--white);
+    }
+    .btn-danger:hover {
+      background-color: #b91c1c;
+    }
+
+.btn-secondary {
+      background-color: var(--slate-200);
+      color: var(--slate-700);
+    }
+    .btn-secondary:hover {
+      background-color: var(--slate-300);
+    }
+
+.btn-block {
+      width: 100%;
+    }
+
+.btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: var(--radius-sm);
+    }
+
+.btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+/* App Shell */
+    #app-container {
+      display: none;
+      min-height: 100vh;
+      flex-direction: row;
+    }
+
+/* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--slate-900);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 40;
+      transition: transform 0.3s ease;
+    }
+
+.sidebar-brand {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+.sidebar-menu {
+      list-style: none;
+      padding: 16px 12px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+.menu-header {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--slate-400);
+      padding: 12px 12px 6px;
+      font-weight: 700;
+    }
+
+.menu-item {
+      margin-bottom: 4px;
+    }
+
+.menu-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      color: var(--slate-300);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+.menu-link:hover, .menu-link.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+    }
+
+.menu-link.active {
+      background-color: var(--accent);
+    }
+
+.sidebar-user {
+      padding: 16px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0,0,0,0.15);
+    }
+
+.user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-full);
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      color: white;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+.user-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+.user-info .name {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--white);
+    }
+
+.user-info .role-badge {
+      font-size: 10px;
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background: rgba(255,255,255,0.15);
+      color: var(--slate-200);
+      font-weight: 600;
+      margin-top: 2px;
+      text-transform: uppercase;
+    }
+
+/* Main Content Area */
+    .main-wrapper {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: var(--slate-100);
+    }
+
+/* Header */
+    .top-header {
+      height: var(--header-height);
+      background-color: var(--white);
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+.header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+.page-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+
+.header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+.icon-btn {
+      background: transparent;
+      border: 1px solid var(--slate-200);
+      color: var(--slate-600);
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+.icon-btn:hover {
+      background: var(--slate-100);
+      color: var(--slate-900);
+    }
+
+.notification-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: var(--danger);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--white);
+    }
+
+.content-body {
+      padding: 28px;
+      flex: 1;
+    }
+
+/* Clock-in Panel */
+    .clock-in-panel {
+      background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
+      color: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      box-shadow: var(--shadow-md);
+    }
+
+.clock-time-display {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+.clock-digit {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+.clock-info-text h4 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+.clock-info-text p {
+      font-size: 12px;
+      color: var(--slate-400);
+    }
+
+.clock-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+/* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+.stat-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--slate-200);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+.stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+.stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+.stat-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--slate-500);
+      margin-bottom: 4px;
+    }
+
+.stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+
+.stat-footer {
+      font-size: 12px;
+      color: var(--slate-500);
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+/* Cards & Tables */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--slate-200);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+.card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+.card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+
+.card-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+.table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+.table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+
+.table th {
+      background-color: var(--slate-50);
+      color: var(--slate-600);
+      font-weight: 600;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--slate-200);
+      white-space: nowrap;
+    }
+
+.table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--slate-200);
+      color: var(--slate-700);
+      vertical-align: middle;
+    }
+
+.table tr:last-child td {
+      border-bottom: none;
+    }
+
+.table tr:hover td {
+      background-color: var(--slate-50);
+    }
+
+/* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+.badge-pending {
+      background: var(--warning-light);
+      color: var(--warning);
+      border: 1px solid #fde68a;
+    }
+
+.badge-approved {
+      background: var(--success-light);
+      color: var(--success);
+      border: 1px solid #a7f3d0;
+    }
+
+.badge-rejected {
+      background: var(--danger-light);
+      color: var(--danger);
+      border: 1px solid #fecaca;
+    }
+
+.badge-cancelled {
+      background: var(--slate-100);
+      color: var(--slate-500);
+      border: 1px solid var(--slate-300);
+    }
+
+/* Modals */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+.modal-backdrop.show {
+      display: flex;
+    }
+
+.modal-dialog {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 580px;
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+
+@keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+.modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+.modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--slate-900);
+    }
+
+.modal-body {
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+.modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--slate-200);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      background: var(--slate-50);
+    }
+
+/* Toast Notification */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 120;
+      max-width: 360px;
+      width: calc(100% - 48px);
+    }
+
+.toast {
+      background: var(--slate-900);
+      color: var(--white);
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13.5px;
+      animation: toastSlideIn 0.25s ease-out;
+      border-left: 4px solid var(--accent);
+    }
+
+.toast.success { border-left-color: var(--success); }
+    .toast.danger { border-left-color: var(--danger); }
+    .toast.warning { border-left-color: var(--warning); }
+
+@keyframes toastSlideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+/* Mobile Bottom Navigation - DILINDUNGI & HANYA MUNCUL BILA LOGGED IN */
+    .mobile-nav {
+      display: none !important;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: var(--white);
+      border-top: 1px solid var(--slate-200);
+      z-index: 35;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+    }
+
+@media (max-width: 900px) {
+  .mobile-nav.logged-in {
+    display: flex !important;
+  }
+}
+
+.mobile-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--slate-500);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 500;
+      flex: 1;
+      height: 100%;
+      cursor: pointer;
+    }
+
+.mobile-nav-item.active {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+/* Notifications Dropdown */
+    #notification-dropdown {
+      display: none;
+      position: absolute;
+      right: 24px;
+      top: 65px;
+      width: 340px;
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      border: 1px solid var(--slate-200);
+      z-index: 50;
+      overflow: hidden;
+    }
+
+.notif-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+.notif-list {
+      max-height: 320px;
+      overflow-y: auto;
+      list-style: none;
+    }
+
+.notif-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--slate-100);
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background 0.15s;
+    }
+
+.notif-item:hover {
+      background: var(--slate-50);
+    }
+
+.notif-item.unread {
+      background: var(--primary-light);
+    }
+
+.notif-time {
+      font-size: 11px;
+      color: var(--slate-400);
+    }
+
+/* Responsive Breakpoints */
+
+/* TABLET DAN TELEFON */
+@media (max-width: 900px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+.sidebar.open {
+    transform: translateX(0);
+  }
+
+.main-wrapper {
+    margin-left: 0;
+    padding-bottom: 70px;
+  }
+
+.content-body {
+    padding: 16px;
+  }
+
+.top-header {
+    padding: 0 16px;
+  }
+
+#mobile-menu-toggle {
+    display: flex !important;
+  }
+}
+
+/* TELEFON */
+@media (max-width: 600px) {
+
+/* Kad Login dan Pendaftaran */
+  .auth-card {
+    padding: 24px 18px;
+  }
+
+.brand-logo {
+    gap: 10px;
+  }
+
+.brand-logo > div:last-child {
+    min-width: 0;
+  }
+
+.brand-logo h1 {
+    font-size: 18px;
+  }
+
+.brand-logo p {
+    overflow-wrap: anywhere;
+  }
+
+/* Header */
+  .top-header {
+    gap: 8px;
+  }
+
+.header-left {
+    gap: 8px;
+    min-width: 0;
+  }
+
+.page-title {
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+.header-actions {
+    gap: 8px;
+  }
+
+/* Butang Mohon Cuti tersedia dalam menu bawah */
+  .header-actions > .btn {
+    display: none;
+  }
+
+/* Jam dan Kehadiran */
+  .clock-time-display {
+    flex-wrap: wrap;
+  }
+
+.clock-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
+.clock-buttons .btn {
+    width: 100%;
+  }
+
+/* Borang Permohonan Cuti */
+  #form-apply-leave .modal-body >
+  div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+/* Profil Pekerja */
+  #profile-update-form >
+  div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+/* Notifikasi */
+  #notification-dropdown {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    top: calc(var(--header-height) + 8px);
+    width: auto;
+  }
+
+/* Ruangan Input */
+  .form-control {
+    font-size: 16px;
+  }
+
+/* Modal */
+  .modal-body {
+    padding: 16px;
+  }
+
+.modal-footer {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+}
+
+/* PEMBETULAN BORANG PERMOHONAN CUTI */
+
+#modal-apply-leave .modal-dialog {
+  max-height: calc(100dvh - 32px);
+}
+
+#modal-apply-leave #form-apply-leave {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+#modal-apply-leave .modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#modal-apply-leave .modal-footer {
+  flex-shrink: 0;
+}
+
+/* SIDEBAR BOLEH DITUTUP PADA SKRIN BESAR */
+@media (min-width: 901px) {
+
+/* SEMBUNYIKAN SIDEBAR APABILA IKON MERAH DITEKAN */
+  #app-container > .sidebar.open {
+    transform: translateX(-100%);
+  }
+
+/* LUASKAN DASHBOARD APABILA SIDEBAR DITUTUP */
+  #app-container > .sidebar.open + .main-wrapper {
+    margin-left: 0;
+  }
+
+/* PAPARKAN BUTANG MENU DI HEADER UNTUK BUKA SEMULA */
+  #app-container > .sidebar.open + .main-wrapper #mobile-menu-toggle {
+    display: flex !important;
+  }
+
+}
+
+</style>
+</head>
+<body>
+
+<!-- 1. AUTH SCREEN (LOGIN & DAFTAR SENDIRI TANPA KOD HR) -->
+  <div id="auth-screen">
+    <div class="auth-card">
+
+<div class="brand-logo">
+  <div class="brand-logo-icon" style="background: transparent; padding: 0;">
+    <img
+      src="https://drive.google.com/thumbnail?id=19m3CXhJlY_jEv-u84uwvPH226QwKFf1q&sz=w500"
+      alt="Logo STAFF HRMS"
+      style="width: 48px; height: 48px; object-fit: contain; display: block;"
+    >
+  </div>
+  <div>
+    <h1>STAFF HRMS</h1>
+    <p>Sistem Pengurusan Cuti dan Kehadiran Staff SJAM Hotspot Kota Bharu</p>
+  </div>
+</div>
+
+<!-- VIEW A: BORANG LOG MASUK -->
+      <div id="view-login-form">
+        <form id="login-form">
+          <div class="form-group">
+
+<label for="login-email">Emel Berdaftar</label>
+<div class="input-wrapper">
+  <input type="email" id="login-email" class="form-control" placeholder="Masukkan emel anda" required autocomplete="username">
+</div>
+          </div>
+
+<div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label for="login-password" style="margin-bottom: 0;">Kata Laluan</label>
+              <a href="javascript:void(0)" onclick="openResetPasswordModal()" style="font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500;">Lupa Kata Laluan?</a>
+            </div>
+            <div class="input-wrapper">
+              <input type="password" id="login-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+              <button type="button" class="input-toggle-btn" onclick="togglePasswordVisibility('login-password', this)" title="Papar Kata Laluan">
+                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+          </div>
+
+<button type="submit" class="btn btn-primary btn-block" id="btn-login-submit" style="margin-top: 10px;">
+  <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+  <span>Log Masuk Sistem</span>
+</button>
+</form>
+
+<!-- LOG MASUK DENGAN GOOGLE -->
+<button
+  type="button"
+  id="btn-login-google"
+  class="btn btn-outline-primary btn-block"
+  style="margin-top: 16px;"
+  onclick="loginWithGoogle()"
+>
+  <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+  <span>Log Masuk dengan Google</span>
+</button>
+
+<p style="
+  font-size: 11px;
+  color: var(--slate-500);
+  text-align: center;
+  margin-top: 8px;
+">
+  Untuk akaun Google yang telah dipautkan sahaja.
+</p>
+
+<div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--slate-200); text-align: center;">
+          <p style="font-size: 13px; color: var(--slate-600); margin-bottom: 12px;">Belum mempunyai akaun?</p>
+          <button type="button" class="btn btn-outline-primary btn-block" onclick="showAuthView('register')">
+            <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
+            <span>DAFTAR AKAUN BAHARU</span>
+          </button>
+        </div>
+      </div>
+
+<!-- VIEW B: BORANG DAFTAR AKAUN BAHARU (BEBAS TANPA KOD HR) -->
+      <div id="view-register-form" style="display: none;">
+        <div style="margin-bottom: 18px;">
+          <h2 style="font-size: 18px; font-weight: 700; color: var(--slate-900);">Pendaftaran Akaun Pekerja</h2>
+          <p style="font-size: 12.5px; color: var(--slate-500);">Daftar akaun peribadi anda. Akaun akan terus aktif serta-merta.</p>
+        </div>
+
+<form id="register-form">
+          <div class="form-group">
+            <label for="reg-name">Nama Penuh <span style="color: var(--danger);">*</span></label>
+
+<input type="text" id="reg-name" class="form-control" placeholder="aliahmad" required autocomplete="name">
+
+</div>
+
+<div class="form-group">
+  <label for="reg-phone">No. Telefon <span style="color: var(--danger);">*</span></label>
+  <input type="tel" id="reg-phone" class="form-control" placeholder="0123456789" required autocomplete="tel">
+</div>
+
+<div class="form-group">
+  <label for="reg-email">Emel Anda Sendiri <span style="color: var(--danger);">*</span></label>
+  <input type="email" id="reg-email" class="form-control" placeholder="aliahmad@gmail.com" required autocomplete="email">
+</div>
+
+<div class="form-group">
+            <label for="reg-password">Kata Laluan Baharu <span style="color: var(--danger);">*</span></label>
+            <div class="input-wrapper">
+              <input type="password" id="reg-password" class="form-control" placeholder="Minimum 8 aksara" required oninput="checkPasswordStrength(this.value)">
+              <button type="button" class="input-toggle-btn" onclick="togglePasswordVisibility('reg-password', this)" title="Papar Kata Laluan">
+                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+            <div class="password-strength-bar">
+              <div id="password-strength-meter" class="password-strength-fill"></div>
+            </div>
+            <span id="password-strength-label" class="strength-text">Kekuatan: Lemah</span>
+          </div>
+
+<div class="form-group">
+            <label for="reg-password-confirm">Sahkan Kata Laluan <span style="color: var(--danger);">*</span></label>
+            <div class="input-wrapper">
+              <input type="password" id="reg-password-confirm" class="form-control" placeholder="Ulang kata laluan" required>
+              <button type="button" class="input-toggle-btn" onclick="togglePasswordVisibility('reg-password-confirm', this)" title="Papar Kata Laluan">
+                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+          </div>
+
+<div class="form-group" style="margin-top: 14px;">
+            <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: 400; font-size: 12.5px; color: var(--slate-600); cursor: pointer;">
+              <input type="checkbox" id="reg-terms" required style="margin-top: 2px;">
+              <span>Saya mengesahkan semua butiran adalah benar dan bersetuju dengan Terma & Dasar Privasi HRMS.</span>
+            </label>
+          </div>
+
+<button type="submit" class="btn btn-primary btn-block" id="btn-register-submit" style="margin-top: 14px;">
+            <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+            <span>DAFTAR SEKARANG</span>
+          </button>
+        </form>
+
+<div style="margin-top: 20px; text-align: center; border-top: 1px solid var(--slate-200); padding-top: 16px;">
+          <p style="font-size: 13px; color: var(--slate-600);">
+            Sudah mempunyai akaun?
+            <a href="javascript:void(0)" onclick="showAuthView('login')" style="color: var(--accent); font-weight: 600; text-decoration: none; margin-left: 4px;">Log Masuk</a>
+          </p>
+        </div>
+      </div>
+       </div>
+
+<!-- HAK CIPTA SISTEM -->
+    <div style="
+      width: 100%;
+      max-width: 480px;
+      margin-top: 16px;
+      padding: 0 12px;
+      text-align: center;
+      color: #f87171;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.6;
+    ">
+      © 2026 St. John Ambulans Malaysia (SJAM)
+      Hotspot Kawasan Kelantan Utara, Kota Bharu.
+      Hak Cipta Terpelihara.
+    </div>
+
+</div>
+
+<!-- 2. MAIN APPLICATION SHELL
+ (HANYA DITUNJUKKAN SELEPAS PENGGUNA LOG MASUK) -->
+  <div id="app-container">
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar" id="sidebar">
+
+<div class="sidebar-brand">
+  <div class="brand-logo-icon" style="background: transparent; padding: 0;">
+    <img
+      src="https://drive.google.com/thumbnail?id=19m3CXhJlY_jEv-u84uwvPH226QwKFf1q&sz=w500"
+      alt="Logo SJAM HOTSPOT"
+      style="width: 40px; height: 40px; object-fit: contain; display: block;"
+    >
+  </div>
+
+<div>
+          <h2 style="font-size: 16px; font-weight: 700; color: var(--white); line-height: 1.2;">STAFF HRMS</h2>
+
+<span style="font-size: 11px; color: var(--slate-400);">Portal Pengurusan Cuti</span>
+        </div>
+
+<!-- BUTANG TUTUP SIDEBAR - TIGA GARISAN MERAH -->
+<button
+  type="button"
+  onclick="toggleSidebar()"
+  title="Tutup / Buka Menu"
+  aria-label="Tutup atau buka menu sisi"
+  style="
+    position: absolute;
+    top: 16px;
+    right: 14px;
+    background: transparent;
+    border: none;
+    color: #ff3333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    cursor: pointer;
+    z-index: 1;
+  "
+>
+  <i
+    data-lucide="menu"
+    style="width: 30px; height: 30px; stroke-width: 3;"
+  ></i>
+</button>
+
+</div>
+
+<ul class="sidebar-menu">
+        <div class="menu-header">Menu Utama</div>
+        <li class="menu-item">
+          <a class="menu-link active" onclick="navigateTab('dashboard')">
+            <i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a class="menu-link" onclick="openApplyLeaveModal()">
+            <i data-lucide="plus-circle" style="width: 18px; height: 18px;"></i>
+            <span>Mohon Cuti</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a class="menu-link" onclick="navigateTab('my-leaves')">
+            <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+            <span>Status Permohonan</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a class="menu-link" onclick="navigateTab('leave-balance')">
+            <i data-lucide="pie-chart" style="width: 18px; height: 18px;"></i>
+            <span>Baki Cuti</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a class="menu-link" onclick="navigateTab('attendance')">
+            <i data-lucide="clock" style="width: 18px; height: 18px;"></i>
+            <span>Rekod Kehadiran</span>
+          </a>
+        </li>
+        <li class="menu-item">
+          <a class="menu-link" onclick="navigateTab('my-profile')">
+            <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+            <span>Profil Saya</span>
+          </a>
+        </li>
+
+<!-- Supervisor Only Navigation -->
+        <div class="menu-header supervisor-only" style="display: none;">Penyeliaan Pasukan</div>
+        <li class="menu-item supervisor-only" style="display: none;">
+          <a class="menu-link" onclick="navigateTab('supervisor-approval')">
+            <i data-lucide="check-square" style="width: 18px; height: 18px;"></i>
+            <span>Kelulusan Cuti</span>
+            <span id="sup-badge-count" class="badge badge-pending" style="margin-left: auto; display: none;">0</span>
+          </a>
+        </li>
+        <li class="menu-item supervisor-only" style="display: none;">
+          <a class="menu-link" onclick="navigateTab('team-calendar')">
+            <i data-lucide="users" style="width: 18px; height: 18px;"></i>
+            <span>Kalendar Pasukan</span>
+          </a>
+        </li>
+
+<!-- Admin Only Navigation -->
+        <div class="menu-header admin-only" style="display: none;">Pentadbiran HR</div>
+        <li class="menu-item admin-only" style="display: none;">
+          <a class="menu-link" onclick="navigateTab('admin-employees')">
+            <i data-lucide="users" style="width: 18px; height: 18px;"></i>
+            <span>Pengurusan Pekerja</span>
+          </a>
+        </li>
+        <li class="menu-item admin-only" style="display: none;">
+          <a class="menu-link" onclick="navigateTab('admin-leaves')">
+            <i data-lucide="file-spreadsheet" style="width: 18px; height: 18px;"></i>
+            <span>Semua Rekod Cuti</span>
+          </a>
+        </li>
+        <li class="menu-item admin-only" style="display: none;">
+          <a class="menu-link" onclick="navigateTab('admin-attendance')">
+            <i data-lucide="calendar-check-2" style="width: 18px; height: 18px;"></i>
+            <span>Semakan Kehadiran</span>
+          </a>
+        </li>
+        <li class="menu-item admin-only" style="display: none;">
+          <a class="menu-link" onclick="navigateTab('admin-audit')">
+            <i data-lucide="activity" style="width: 18px; height: 18px;"></i>
+            <span>Log Audit Sistem</span>
+          </a>
+        </li>
+      </ul>
+
+<!-- User Profile in Sidebar Footer -->
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sidebar-avatar">--</div>
+        <div class="user-info">
+          <div class="name" id="sidebar-name">Pengguna</div>
+          <span class="role-badge" id="sidebar-role">Staff</span>
+        </div>
+        <button class="icon-btn" onclick="logout()" title="Log Keluar" style="border-color: rgba(255,255,255,0.2); color: white;">
+          <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+        </button>
+      </div>
+    </aside>
+
+<!-- Main Content Area -->
+    <div class="main-wrapper">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="icon-btn" id="mobile-menu-toggle" onclick="toggleSidebar()" style="display: none;">
+            <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+          </button>
+          <h2 class="page-title" id="page-current-title">Dashboard Utama</h2>
+        </div>
+
+<div class="header-actions">
+
+<button class="btn btn-primary btn-sm" onclick="openApplyLeaveModal()">
+  <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i>
+  <span>MOHON CUTI</span>
+</button>
+
+<!-- Notification Bell -->
+          <div style="position: relative;">
+            <button class="icon-btn" onclick="toggleNotifications()" id="notif-btn" title="Notifikasi">
+              <i data-lucide="bell" style="width: 19px; height: 19px;"></i>
+              <span class="notification-badge" id="notif-unread-badge" style="display: none;">0</span>
+            </button>
+
+<!-- Notifications Drawer -->
+            <div id="notification-dropdown">
+              <div class="notif-header">
+                <span>Notifikasi Sistem</span>
+                <button class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 11px;" onclick="markAllNotificationsAsRead()">Tandai Dibaca</button>
+              </div>
+              <ul class="notif-list" id="notif-list-container">
+                <li style="padding: 20px; text-align: center; color: var(--slate-400); font-size: 13px;">Tiada notifikasi baharu</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </header>
+
+<main class="content-body">
+
+<!-- MODULE: REALTIME CLOCK-IN BAR (Asia/Kuala_Lumpur) -->
+        <div class="clock-in-panel">
+          <div class="clock-time-display">
+            <div class="clock-digit" id="live-clock">00:00:00</div>
+            <div class="clock-info-text">
+              <h4 id="live-date">Memuatkan tarikh...</h4>
+              <p>Zon Waktu: Asia/Kuala_Lumpur (MYT)</p>
+            </div>
+          </div>
+          <div class="clock-buttons">
+            <button class="btn btn-success" id="btn-clock-in" onclick="recordAttendance('CLOCK_IN')">
+              <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+              <span>CLOCK IN — Masuk Kerja</span>
+            </button>
+            <button class="btn btn-danger" id="btn-clock-out" onclick="recordAttendance('CLOCK_OUT')">
+              <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
+              <span>CLOCK OUT — Tamat Kerja</span>
+            </button>
+          </div>
+        </div>
+
+<!-- TAB 1: DASHBOARD RINGKASAN -->
+        <section id="view-dashboard" class="tab-view">
+          <div style="margin-bottom: 22px;">
+            <h2 style="font-size: 22px; font-weight: 700; color: var(--slate-900);" id="dash-greeting">Selamat Datang!</h2>
+            <p style="font-size: 13px; color: var(--slate-500);" id="dash-emp-subtext">Emel: --</p>        
+  </div>
+
+<div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <div>
+                  <div class="stat-title">Kelayakan Cuti Tahunan</div>
+                  <div class="stat-value" id="stat-annual-entitled">0</div>
+                </div>
+                <div class="stat-icon" style="background: var(--info-light); color: var(--info);">
+                  <i data-lucide="calendar-check" style="width: 22px; height: 22px;"></i>
+                </div>
+              </div>
+              <div class="stat-footer">Tahun Semasa: 2026</div>
+            </div>
+
+<div class="stat-card">
+              <div class="stat-header">
+                <div>
+                  <div class="stat-title">Cuti Telah Digunakan</div>
+                  <div class="stat-value" id="stat-annual-used">0</div>
+                </div>
+                <div class="stat-icon" style="background: var(--warning-light); color: var(--warning);">
+                  <i data-lucide="clock" style="width: 22px; height: 22px;"></i>
+                </div>
+              </div>
+              <div class="stat-footer">Termasuk cuti yang telah diluluskan</div>
+            </div>
+
+<div class="stat-card">
+              <div class="stat-header">
+                <div>
+                  <div class="stat-title">Baki Cuti Semasa</div>
+                  <div class="stat-value" id="stat-annual-balance" style="color: var(--success);">0</div>
+                </div>
+                <div class="stat-icon" style="background: var(--success-light); color: var(--success);">
+                  <i data-lucide="pie-chart" style="width: 22px; height: 22px;"></i>
+                </div>
+              </div>
+              <div class="stat-footer">Hari bekerja boleh dipohon</div>
+            </div>
+
+<div class="stat-card">
+              <div class="stat-header">
+                <div>
+                  <div class="stat-title">Menunggu Kelulusan</div>
+                  <div class="stat-value" id="stat-pending-requests" style="color: var(--warning);">0</div>
+                </div>
+                <div class="stat-icon" style="background: var(--warning-light); color: var(--warning);">
+                  <i data-lucide="hourglass" style="width: 22px; height: 22px;"></i>
+                </div>
+              </div>
+              <div class="stat-footer">Sedang disemak oleh penyelia</div>
+            </div>
+
+<div class="stat-card">
+              <div class="stat-header">
+                <div>
+                  <div class="stat-title">Permohonan Diluluskan</div>
+                  <div class="stat-value" id="stat-approved-requests" style="color: var(--success);">0</div>
+                </div>
+                <div class="stat-icon" style="background: var(--success-light); color: var(--success);">
+                  <i data-lucide="check-circle-2" style="width: 22px; height: 22px;"></i>
+                </div>
+              </div>
+              <div class="stat-footer">Jumlah permohonan selesai</div>
+            </div>
+          </div>
+
+<!-- Permohonan Cuti Terkini -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Permohonan Cuti Terkini</h3>
+              <div class="card-actions">
+                <button class="btn btn-secondary btn-sm" onclick="navigateTab('my-leaves')">Lihat Semua Status</button>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>No. Rujukan</th>
+                    <th>Jenis Cuti</th>
+                    <th>Tarikh Mula</th>
+                    <th>Tarikh Akhir</th>
+                    <th>Bil. Hari</th>
+                    <th>Status</th>
+                    <th>Penyelia / Catatan</th>
+                    <th>Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-recent-leaves-body">
+                  <tr><td colspan="8" style="text-align: center; padding: 24px; color: var(--slate-400);">Memuatkan data permohonan...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+<!-- TAB 2: MY LEAVES (STATUS PERMOHONAN) -->
+        <section id="view-my-leaves" class="tab-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Sejarah & Status Permohonan Cuti Saya</h3>
+              <div class="card-actions">
+
+</div>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>ID Permohonan</th>
+                    <th>Jenis Cuti</th>
+                    <th>Tarikh Dipohon</th>
+                    <th>Tempoh Cuti</th>
+                    <th>Hari</th>
+                    <th>Sebab Permohonan</th>
+                    <th>Status</th>
+                    <th>Keputusan Penyelia</th>
+                    <th>Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="my-leaves-full-body">
+                  <tr><td colspan="9" style="text-align: center; padding: 24px;">Tiada rekod permohonan cuti.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+<!-- TAB 3: BAKI CUTI -->
+        <section id="view-leave-balance" class="tab-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Pecahan Kelayakan & Baki Cuti Semasa</h3>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Jenis Cuti</th>
+                    <th>Kelayakan Tahunan</th>
+                    <th>Telah Digunakan</th>
+                    <th>Baki Tersedia</th>
+                    <th>Status Kelayakan</th>
+                  </tr>
+                </thead>
+                <tbody id="leave-balance-detail-body">
+                  <tr><td colspan="5" style="text-align: center; padding: 24px;">Memuatkan pecahan baki cuti...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+<!-- TAB 4: REKOD KEHADIRAN -->
+        <section id="view-attendance" class="tab-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Log Kehadiran Waktu Bertugas Saya</h3>
+              <div class="card-actions">
+                <span style="font-size: 13px; color: var(--slate-500);">Rekod rasmi berasaskan masa pelayan dan tidak boleh diedit manual.</span>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Tarikh</th>
+                    <th>Masa Masuk (Clock In)</th>
+                    <th>Masa Tamat (Clock Out)</th>
+                    <th>Tempoh Bertugas</th>
+                    <th>Status</th>
+                    <th>Pengesahan</th>
+                  </tr>
+                </thead>
+                <tbody id="attendance-table-body">
+                  <tr><td colspan="6" style="text-align: center; padding: 24px;">Memuatkan rekod kehadiran...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+<!-- TAB 5: PROFIL SAYA -->
+        <section id="view-my-profile" class="tab-view" style="display: none;">
+          <div class="card" style="max-width: 680px; margin: 0 auto;">
+            <div class="card-header">
+              <h3 class="card-title">Maklumat Profil Pekerja</h3>
+            </div>
+            <div style="padding: 24px;">
+              <form id="profile-update-form">
+
+<div class="form-group">
+  <label>Nama Penuh</label>
+  <input type="text" id="prof-name" class="form-control" readonly style="background: var(--slate-100);">
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                  <div class="form-group">
+                    <label>Emel Korporat</label>
+                    <input type="email" id="prof-email" class="form-control" readonly style="background: var(--slate-100);">
+                  </div>
+                  <div class="form-group">
+                    <label>Nombor Telefon</label>
+                    <input type="text" id="prof-phone" class="form-control">
+                  </div>
+                </div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                  <div class="form-group">
+                    <label>Jabatan</label>
+                    <input type="text" id="prof-dept" class="form-control" readonly style="background: var(--slate-100);">
+                  </div>
+                  <div class="form-group">
+                    <label>Peranan Sistem</label>
+                    <input type="text" id="prof-role" class="form-control" readonly style="background: var(--slate-100);">
+                  </div>
+                </div>
+
+<hr style="border: 0; border-top: 1px solid var(--slate-200); margin: 24px 0;">
+
+<h4 style="font-size: 15px; font-weight: 700; margin-bottom: 14px; color: var(--slate-900);">Tukar Kata Laluan Peribadi</h4>
+                <div class="form-group">
+                  <label for="prof-new-password">Kata Laluan Baharu</label>
+                  <input type="password" id="prof-new-password" class="form-control" placeholder="Biarkan kosong jika tidak mahu menukar">
+                </div>
+
+<!-- BUTANG SIMPAN PROFIL SEDIA ADA -->
+<button type="submit" class="btn btn-primary" style="margin-top: 8px;">
+  <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+  <span>Simpan Perubahan</span>
+</button>
+
+<!-- BUTANG PAUTKAN AKAUN GOOGLE -->
+<button
+  type="button"
+  id="btn-link-google"
+  class="btn btn-outline-primary"
+  style="margin-top: 12px;"
+  onclick="linkGoogleCurrentUser()"
+>
+  <i data-lucide="link" style="width: 16px; height: 16px;"></i>
+  <span>Pautkan Akaun Google</span>
+</button>
+
+</form>
+            </div>
+          </div>
+        </section>
+
+<!-- TAB 6: SUPERVISOR APPROVAL -->
+<section id="view-supervisor-approval" class="tab-view" style="display: none;">
+
+<!-- KELAYAKAN CUTI TAHUNAN - SUPERVISOR SAHAJA -->
+  <div class="card" id="supervisor-entitlement-card" style="display:none;">
+
+<div class="card-header">
+      <h3 class="card-title">Tetapan Kelayakan Cuti Tahunan STAFF</h3>
+    </div>
+
+<div style="padding:24px;">
+
+<div class="form-group">
+        <label for="supervisor-staff-select">Pilih Nama STAFF</label>
+
+<select id="supervisor-staff-select" class="form-control">
+          <option value="">Sila muatkan senarai STAFF</option>
+        </select>
+      </div>
+
+<div class="form-group">
+        <label for="supervisor-entitlement-days">Kelayakan Cuti Tahunan (Hari)</label>
+
+<input
+          type="number"
+          id="supervisor-entitlement-days"
+          class="form-control"
+          min="0"
+          max="366"
+          step="1"
+          placeholder="Contoh: 14"
+        >
+      </div>
+
+<button
+        type="button"
+        class="btn btn-primary"
+        onclick="loadSupervisorStaffList()"
+      >
+        Muat Senarai STAFF
+      </button>
+
+<button
+  type="button"
+  id="btn-save-entitlement"
+  class="btn btn-success"
+  onclick="saveSupervisorEntitlement()"
+>
+  Simpan Kelayakan
+</button>
+    </div>
+  </div>
+
+<!-- KEKALKAN JADUAL KELULUSAN CUTI SEDIA ADA -->
+  <div class="card">
+
+<div class="card-header">
+              <h3 class="card-title">Permohonan Cuti Kakitangan Bawah Seliaan</h3>
+              <div class="card-actions">
+                <span class="badge badge-pending" id="sup-pending-pill">0 Menunggu Semakan</span>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Pekerja</th>
+                    <th>Jabatan</th>
+                    <th>Jenis Cuti</th>
+                    <th>Tarikh Dipohon</th>
+                    <th>Bil. Hari</th>
+                    <th>Sebab Permohonan</th>
+                    <th>Lampiran</th>
+                    <th>Tindakan Keputusan</th>
+                  </tr>
+                </thead>
+                <tbody id="supervisor-leaves-body">
+                  <tr><td colspan="8" style="text-align: center; padding: 24px;">Tiada permohonan menunggu semakan.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+<!-- TAB 7: TEAM CALENDAR -->
+        <section id="view-team-calendar" class="tab-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Kalendar Perancangan Cuti Pasukan</h3>
+            </div>
+            <div style="padding: 24px;">
+              <div id="team-calendar-cards" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+                <!-- Paparan dinamik -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+<!-- TAB 8: ADMIN EMPLOYEES -->
+        <section id="view-admin-employees" class="tab-view" style="display: none;">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-title">Jumlah Pekerja Aktif</div>
+              <div class="stat-value" id="admin-total-active-staff">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-title">Sedang Bercuti Hari Ini</div>
+              <div class="stat-value" id="admin-on-leave-today" style="color: var(--accent);">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-title">Jumlah Permohonan Keseluruhan</div>
+              <div class="stat-value" id="admin-total-requests">0</div>
+            </div>
+          </div>
+
+<div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Senarai & Pengurusan Akaun Pekerja</h3>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>ID Pekerja</th>
+                    <th>Nama Penuh</th>
+                    <th>Emel</th>
+                    <th>Jabatan</th>
+                    <th>Penyelia</th>
+                    <th>Peranan</th>
+                    <th>Status</th>
+                    <th>Tindakan HR</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-employees-body">
+                  <tr><td colspan="8" style="text-align: center; padding: 24px;">Memuatkan senarai kakitangan...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+<!-- TAB 9: ADMIN ALL LEAVES -->
+        <section id="view-admin-leaves" class="tab-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Semua Rekod Cuti Syarikat</h3>
+              <div class="card-actions">
+                <button class="btn btn-secondary btn-sm" onclick="exportLeavesToCSV()">
+                  <i data-lucide="download" style="width: 15px; height: 15px;"></i>
+                  <span>Eksport CSV</span>
+                </button>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama Pekerja</th>
+                    <th>Jenis Cuti</th>
+                    <th>Tarikh Mula</th>
+                    <th>Tarikh Akhir</th>
+                    <th>Hari</th>
+                    <th>Status</th>
+                    <th>Pelulus</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-leaves-body">
+                  <tr><td colspan="8" style="text-align: center; padding: 24px;">Memuatkan data permohonan...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+<!-- TAB 10: ADMIN ATTENDANCE AUDIT -->
+        <section id="view-admin-attendance" class="tab-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Log Keseluruhan Kehadiran Pekerja</h3>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Pekerja</th>
+                    <th>Tarikh</th>
+                    <th>Masuk (Clock In)</th>
+                    <th>Tamat (Clock Out)</th>
+                    <th>Jumlah Masa</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-attendance-body">
+                  <tr><td colspan="6" style="text-align: center; padding: 24px;">Memuatkan rekod kehadiran...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+<!-- TAB 11: AUDIT LOG -->
+        <section id="view-admin-audit" class="tab-view" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Jejak Audit Sistem (Security & Actions Trail)</h3>
+            </div>
+            <div class="table-container">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Masa (MYT)</th>
+                    <th>Pelaku Tindakan</th>
+                    <th>Jenis Aktiviti</th>
+                    <th>Keterangan Transaksi</th>
+                    <th>Alamat IP / Klien</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-audit-body">
+                  <tr><td colspan="5" style="text-align: center; padding: 24px;">Memuatkan log sistem...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+</main>
+    </div>
+  </div>
+
+<!-- 3. MOBILE BOTTOM NAVIGATION (TERLINDUNG: HANYA MUNCUL APABILA PENGGUNA BERJAYA LOGIN) -->
+  <nav class="mobile-nav" id="mobile-nav-bar">
+    <div class="mobile-nav-item active" onclick="navigateTab('dashboard')">
+      <i data-lucide="layout-dashboard" style="width: 20px; height: 20px;"></i>
+      <span>Dashboard</span>
+    </div>
+    <div class="mobile-nav-item" onclick="navigateTab('my-leaves')">
+      <i data-lucide="calendar" style="width: 20px; height: 20px;"></i>
+      <span>Cuti</span>
+    </div>
+    <div class="mobile-nav-item" onclick="openApplyLeaveModal()">
+      <div style="background: var(--accent); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
+        <i data-lucide="plus" style="width: 20px; height: 20px;"></i>
+      </div>
+      <span>Mohon</span>
+    </div>
+    <div class="mobile-nav-item" onclick="navigateTab('attendance')">
+      <i data-lucide="clock" style="width: 20px; height: 20px;"></i>
+      <span>Hadir</span>
+    </div>
+    <div class="mobile-nav-item" onclick="logout()">
+      <i data-lucide="log-out" style="width: 20px; height: 20px;"></i>
+      <span>Keluar</span>
+    </div>
+  </nav>
+
+<!-- 4. MODAL: APPLY LEAVE (BORANG PERMOHONAN CUTI) -->
+  <div class="modal-backdrop" id="modal-apply-leave">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Borang Permohonan Cuti Baru</h3>
+        <button class="icon-btn" onclick="closeModal('modal-apply-leave')" style="width: 32px; height: 32px;">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+      <form id="form-apply-leave">
+        <div class="modal-body">
+
+<div class="form-group">
+  <label>Nama Pekerja</label>
+  <input type="text" id="apply-staff-name" class="form-control" readonly style="background: var(--slate-100);">
+</div>
+
+<div class="form-group">
+            <label for="apply-leave-type">Jenis Cuti <span style="color: var(--danger);">*</span></label>
+            <select id="apply-leave-type" class="form-control" required onchange="calculateLeaveDays()">
+              <option value="ANNUAL">Cuti Tahunan</option>
+              <option value="MEDICAL">Cuti Sakit</option>
+              <option value="EMERGENCY">Cuti Kecemasan</option>
+              <option value="UNPAID">Cuti Tanpa Gaji</option>
+              <option value="OTHER">Lain-lain Cuti Khas</option>
+            </select>
+          </div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="form-group">
+              <label for="apply-start-date">Tarikh Mula <span style="color: var(--danger);">*</span></label>
+              <input type="date" id="apply-start-date" class="form-control" required onchange="calculateLeaveDays()">
+            </div>
+            <div class="form-group">
+              <label for="apply-end-date">Tarikh Akhir <span style="color: var(--danger);">*</span></label>
+              <input type="date" id="apply-end-date" class="form-control" required onchange="calculateLeaveDays()">
+            </div>
+          </div>
+
+<div class="form-group">
+            <label>Bilangan Hari Bekerja (Pengiraan Automatik)</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input type="number" id="apply-total-days" class="form-control" value="0" readonly style="background: var(--slate-100); font-weight: 700; width: 120px;">
+              <span style="font-size: 13px; color: var(--slate-500);">Tidak termasuk Sabtu & Ahad.</span>
+            </div>
+          </div>
+
+<div class="form-group">
+            <label for="apply-reason">Sebab Permohonan <span style="color: var(--danger);">*</span></label>
+            <textarea id="apply-reason" class="form-control" rows="3" placeholder="Sila nyatakan alasan permohonan secara jelas..." required></textarea>
+          </div>
+
+<div class="form-group">
+            <label for="apply-attachment">Lampiran Dokumen Sokongan (Jika ada, cth: Sijil Sakit / MC)</label>
+            <input type="file" id="apply-attachment" class="form-control">
+          </div>
+        </div>
+
+<div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-apply-leave')">Batal</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-leave">
+            <i data-lucide="send" style="width: 16px; height: 16px;"></i> Hantar Permohonan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<!-- 5. MODAL: DECISION (APPROVE / REJECT) -->
+  <div class="modal-backdrop" id="modal-decision">
+    <div class="modal-dialog" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="decision-modal-title">Semakan Permohonan Cuti</h3>
+        <button class="icon-btn" onclick="closeModal('modal-decision')" style="width: 32px; height: 32px;">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="decision-request-id">
+        <input type="hidden" id="decision-action-type">
+
+<p style="font-size: 14px; margin-bottom: 16px;" id="decision-summary-text">Anda sedang membuat keputusan bagi permohonan ini.</p>
+
+<div class="form-group" id="reject-reason-group" style="display: none;">
+          <label for="decision-reject-reason" style="color: var(--danger);">Sebab Penolakan <span style="color: var(--danger);">*</span></label>
+          <textarea id="decision-reject-reason" class="form-control" rows="3" placeholder="Sila nyatakan alasan rasmi penolakan permohonan ini..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-decision')">Batal</button>
+        <button type="button" class="btn" id="decision-confirm-btn" onclick="executeDecision()">Sahkan Keputusan</button>
+      </div>
+    </div>
+  </div>
+
+<!-- 6. MODAL: RESET PASSWORD REQUEST -->
+  <div class="modal-backdrop" id="modal-reset-password">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Set Semula Kata Laluan</h3>
+        <button class="icon-btn" onclick="closeModal('modal-reset-password')" style="width: 32px; height: 32px;">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+      <form id="form-reset-password">
+        <div class="modal-body">
+          <p style="font-size: 13px; color: var(--slate-600); margin-bottom: 16px;">
+            Masukkan emel berdaftar anda. Pautan untuk menetapkan semula kata laluan akan dihantar ke peti masuk emel anda.
+          </p>
+          <div class="form-group">
+            <label for="reset-email">Emel Berdaftar</label>
+
+<input type="email" id="reset-email" class="form-control" placeholder="Masukkan emel anda" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modal-reset-password')">Tutup</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-reset">Hantar Pautan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<!-- TOAST CONTAINER -->
+  <div id="toast-container"></div>
+
+<script>
+    
+/* ==========================================================================
+   STAFF HRMS - FIREBASE CONFIGURATION
+   ========================================================================== */
+
+let currentUser = null;
+let currentTab = 'dashboard';
+let sessionTimeoutTimer = null;
+const SESSION_INACTIVITY_LIMIT = 30 * 60 * 1000;
+ // 30 minit
+
+    // Inisialisasi Jam Masa Nyata (Asia/Kuala_Lumpur)
+    function startLiveClock() {
+      function updateTime() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ms-MY', { hour12: false, timeZone: 'Asia/Kuala_Lumpur' });
+        const dateStr = now.toLocaleDateString('ms-MY', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          timeZone: 'Asia/Kuala_Lumpur'
+        });
+
+        const clockEl = document.getElementById('live-clock');
+        const dateEl = document.getElementById('live-date');
+        if (clockEl) clockEl.textContent = timeStr;
+        if (dateEl) dateEl.textContent = dateStr;
+      }
+      updateTime();
+      setInterval(updateTime, 1000);
+    }
+
+    // Auto-Logout Sekiranya Tidak Aktif
+    function resetInactivityTimer() {
+      if (sessionTimeoutTimer) clearTimeout(sessionTimeoutTimer);
+      if (currentUser) {
+        sessionTimeoutTimer = setTimeout(() => {
+          showToast('Sesi anda telah tamat tempoh kerana tiada aktiviti.', 'warning');
+          logout();
+        }, SESSION_INACTIVITY_LIMIT);
+      }
+    }
+
+    ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+      window.addEventListener(evt, resetInactivityTimer, { passive: true });
+    });
+
+   
+    // Toggle Pandangan Log Masuk / Daftar
+    function showAuthView(viewName) {
+      const loginView = document.getElementById('view-login-form');
+      const regView = document.getElementById('view-register-form');
+
+      if (viewName === 'register') {
+        loginView.style.display = 'none';
+        regView.style.display = 'block';
+      } else {
+        regView.style.display = 'none';
+        loginView.style.display = 'block';
+      }
+      lucide.createIcons();
+    }
+
+    // Toggle Keterlihatan Kata Laluan
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = `<i data-lucide="eye-off" style="width: 16px; height: 16px;"></i>`;
+      } else {
+        input.type = 'password';
+        btn.innerHTML = `<i data-lucide="eye" style="width: 16px; height: 16px;"></i>`;
+      }
+      lucide.createIcons();
+    }
+
+    // Semakan Kekuatan Kata Laluan
+    function checkPasswordStrength(val) {
+      const meter = document.getElementById('password-strength-meter');
+      const label = document.getElementById('password-strength-label');
+      if (!val) {
+        meter.className = 'password-strength-fill';
+        label.textContent = 'Kekuatan: Lemah';
+        return;
+      }
+
+      let score = 0;
+      if (val.length >= 8) score++;
+      if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+      if (/[0-9]/.test(val) || /[^A-Za-z0-9]/.test(val)) score++;
+
+      if (score === 1) {
+        meter.className = 'password-strength-fill strength-weak';
+        label.textContent = 'Kekuatan: Lemah';
+      } else if (score === 2) {
+        meter.className = 'password-strength-fill strength-medium';
+        label.textContent = 'Kekuatan: Sederhana';
+      } else {
+        meter.className = 'password-strength-fill strength-strong';
+        label.textContent = 'Kekuatan: Teguh';
+      }
+    }
+
+    // SEMAK SESI FIREBASE AUTHENTICATION
+async function checkActiveSession() {
+  const firebase = window.hrmsFirebase;
+
+  if (!firebase || !firebase.auth || !firebase.db) return;
+
+  try {
+    await firebase.auth.authStateReady();
+
+    const user = firebase.auth.currentUser;
+
+    if (!user) return;
+
+    await loadFirebaseProfileAndInit(user);
+
+  } catch (err) {
+    console.error('Ralat sesi Firebase:', err);
+    showToast('Gagal memulihkan sesi pengguna.', 'danger');
+  }
+}
+
+
+// MUAT PROFIL PEKERJA DARIPADA CLOUD FIRESTORE
+async function loadFirebaseProfileAndInit(firebaseUser) {
+  const firebase = window.hrmsFirebase;
+
+  if (!firebase || !firebase.auth || !firebase.db || !firebaseUser) {
+    return false;
+  }
+
+  const { doc, getDoc } = await import(
+    'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+  );
+
+  const { signOut } = await import(
+    'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js'
+  );
+
+  const profileRef = doc(
+    firebase.db,
+    'profiles',
+    firebaseUser.uid
+  );
+
+  const profileSnap = await getDoc(profileRef);
+
+  if (!profileSnap.exists()) {
+    await signOut(firebase.auth);
+
+    showToast(
+      'Profil pekerja tidak ditemui dalam Firestore.',
+      'danger'
+    );
+
+    return false;
+  }
+
+  const profile = profileSnap.data();
+
+  if (profile.is_active !== true) {
+    await signOut(firebase.auth);
+
+    showToast(
+      'Akaun anda tidak aktif. Sila hubungi pentadbir.',
+      'danger'
+    );
+
+    return false;
+  }
+
+  currentUser = {
+    ...profile,
+    id: firebaseUser.uid,
+    name: profile.name || 'Pengguna',
+    email: firebaseUser.email || profile.email || '',
+    role: profile.role || 'STAFF'
+  };
+
+  // PAPARKAN SISTEM SELEPAS BERJAYA LOG MASUK
+  document.getElementById('auth-screen').style.display = 'none';
+
+  document.getElementById('app-container').style.display = 'flex';
+
+  const mobNav = document.getElementById('mobile-nav-bar');
+
+  if (mobNav) {
+    mobNav.classList.add('logged-in');
+  }
+
+  setupUserInterface();
+
+  resetInactivityTimer();
+
+  return true;
+}
+
+// PENDAFTARAN AKAUN STAFF - FIREBASE AUTHENTICATION & FIRESTORE
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const firebase = window.hrmsFirebase;
+
+  if (!firebase || !firebase.auth || !firebase.db) {
+    showToast('Sambungan Firebase belum tersedia.', 'danger');
+    return;
+  }
+
+  const name = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const password = document.getElementById('reg-password').value;
+  const passwordConfirm = document.getElementById('reg-password-confirm').value;
+
+  if (!name || !phone || !email) {
+    showToast('Sila lengkapkan semua maklumat pendaftaran.', 'warning');
+    return;
+  }
+
+  if (password !== passwordConfirm) {
+    showToast('Pengesahan kata laluan tidak sepadan!', 'danger');
+    return;
+  }
+
+  if (password.length < 8) {
+    showToast('Kata laluan mestilah sekurang-kurangnya 8 aksara!', 'danger');
+    return;
+  }
+
+  if (!document.getElementById('reg-terms').checked) {
+    showToast('Sila bersetuju dengan terma pendaftaran.', 'warning');
+    return;
+  }
+
+  const submitBtn = document.getElementById('btn-register-submit');
+
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span>Mendaftarkan Akaun...</span>';
+
+  let createdUser = null;
+
+  try {
+    const [authSDK, firestoreSDK] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js')
+    ]);
+
+    // DAFTAR AKAUN FIREBASE AUTHENTICATION
+    const userCredential = await authSDK.createUserWithEmailAndPassword(
+      firebase.auth,
+      email,
+      password
+    );
+
+    createdUser = userCredential.user;
+
+    // SIMPAN PROFIL PEKERJA DALAM CLOUD FIRESTORE
+    await firestoreSDK.setDoc(
+      firestoreSDK.doc(firebase.db, 'profiles', createdUser.uid),
+      {
+        name: name,
+        email: email,
+        phone: phone,
+        role: 'STAFF',
+        is_active: true
+      }
+    );
+
+    // LOG KELUAR SELEPAS PENDAFTARAN
+    try {
+      await authSDK.signOut(firebase.auth);
+    } catch (signOutError) {
+      console.warn('Log keluar selepas pendaftaran:', signOutError);
+    }
+
+    // PAPAR MESEJ BERJAYA
+    showToast('Pendaftaran berjaya! Akaun telah disimpan dalam Firebase.', 'success');
+
+    // KOSONGKAN BORANG PENDAFTARAN
+    document.getElementById('register-form').reset();
+
+    document.getElementById('password-strength-meter').className = 'password-strength-fill';
+    document.getElementById('password-strength-label').textContent = 'Kekuatan: Lemah';
+
+    // KEMBALI KE PAPARAN LOG MASUK
+    showAuthView('login');
+
+  } catch (err) {
+    console.error('Ralat Firebase Registration:', err);
+
+    if (createdUser) {
+      showToast('Akaun Authentication tercipta tetapi profil Firestore gagal disimpan. Jangan daftar semula. Semak Security Rules.', 'danger');
+    } else if (err.code === 'auth/email-already-in-use') {
+      showToast('Emel ini telah didaftarkan. Sila gunakan emel lain.', 'danger');
+    } else if (err.code === 'auth/weak-password') {
+      showToast('Kata laluan terlalu lemah.', 'danger');
+    } else {
+      showToast('Pendaftaran gagal: ' + err.message, 'danger');
+    }
+
+  } finally {
+    submitBtn.disabled = false;
+
+    submitBtn.innerHTML = `
+      <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+      <span>DAFTAR SEKARANG</span>
+    `;
+
+    lucide.createIcons();
+  }
+});
+
+    // PENGENDALIAN BORANG LOG MASUK - FIREBASE AUTHENTICATION
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const firebase = window.hrmsFirebase;
+
+  if (!firebase || !firebase.auth || !firebase.db) {
+    showToast('Sambungan Firebase belum tersedia.', 'danger');
+    return;
+  }
+
+  const loginEmail = document.getElementById('login-email')
+    .value.trim().toLowerCase();
+
+  const password = document.getElementById('login-password').value;
+
+  const submitBtn = document.getElementById('btn-login-submit');
+
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span>Mengesahkan identiti...</span>';
+
+  try {
+    const authSDK = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js'
+    );
+
+    // LOG MASUK MENGGUNAKAN FIREBASE AUTHENTICATION
+    const userCredential = await authSDK.signInWithEmailAndPassword(
+      firebase.auth,
+      loginEmail,
+      password
+    );
+
+    // SEMAK PROFIL PEKERJA DALAM CLOUD FIRESTORE
+    const loginBerjaya = await loadFirebaseProfileAndInit(
+      userCredential.user
+    );
+
+    if (!loginBerjaya) return;
+
+    showToast(
+      `Selamat kembali, ${currentUser.name}!`,
+      'success'
+    );
+
+  } catch (err) {
+    console.error('Ralat Firebase Login:', err);
+
+    if (err.code === 'auth/invalid-credential') {
+      showToast('Emel atau kata laluan tidak sah.', 'danger');
+
+    } else if (err.code === 'auth/too-many-requests') {
+      showToast('Terlalu banyak percubaan. Sila cuba sebentar lagi.', 'danger');
+
+    } else if (err.code === 'permission-denied') {
+      showToast('Akses profil ditolak. Semak Firestore Security Rules.', 'danger');
+
+    } else {
+      showToast(
+        'Log masuk gagal: ' + err.message,
+        'danger'
+      );
+    }
+
+  } finally {
+    submitBtn.disabled = false;
+
+    submitBtn.innerHTML = `
+      <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+      <span>Log Masuk Sistem</span>
+    `;
+
+    lucide.createIcons();
+  }
+});
+      
+
+
+// LOG MASUK GOOGLE - FIREBASE SPARK PERCUMA
+async function loginWithGoogle() {
+
+  const firebase = window.hrmsFirebase;
+  const btn = document.getElementById('btn-login-google');
+
+  if (!firebase?.auth || !firebase?.db) {
+    showToast('Sambungan Firebase belum tersedia.', 'danger');
+    return;
+  }
+
+  // HANYA UNTUK PENGGUNA YANG BELUM LOG MASUK
+  if (firebase.auth.currentUser || currentUser) {
+    showToast('Anda sudah log masuk ke STAFF HRMS.', 'warning');
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+
+  try {
+
+    const {
+      GoogleAuthProvider,
+      signInWithPopup,
+      getAdditionalUserInfo,
+      deleteUser,
+      signOut
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js'
+    );
+
+    const provider = new GoogleAuthProvider();
+
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+
+    // LOG MASUK MENGGUNAKAN GOOGLE
+    const result = await signInWithPopup(
+      firebase.auth,
+      provider
+    );
+
+    // JANGAN BENARKAN AKAUN GOOGLE BAHARU
+    // MENGAKSES HRMS TANPA PROFIL SEDIA ADA
+    const info = getAdditionalUserInfo(result);
+
+    
+
+
+if (info?.isNewUser === true) {
+
+  // LOG KELUAR JIKA GOOGLE BELUM DIPAUTKAN
+  // JANGAN PADAM AKAUN FIREBASE SECARA AUTOMATIK
+  await signOut(firebase.auth);
+
+  showToast(
+    'Akaun Google belum dipautkan. Sila log masuk menggunakan emel dan kata laluan dahulu.',
+    'warning'
+  );
+
+  return;
+}
+
+    // SEMAK PROFIL FIRESTORE MENGGUNAKAN UID ASAL
+    const loginBerjaya = await loadFirebaseProfileAndInit(
+      result.user
+    );
+
+    if (!loginBerjaya) return;
+
+    showToast(
+      'Berjaya log masuk dengan Google! Selamat kembali, ' +
+      currentUser.name + '!',
+      'success'
+    );
+
+  } catch (err) {
+
+    console.error('Ralat Google Login:', err);
+
+    if (err.code === 'auth/popup-closed-by-user' ||
+        err.code === 'auth/cancelled-popup-request') {
+      return;
+    }
+
+    if (err.code === 'auth/popup-blocked') {
+      showToast(
+        'Sila benarkan pop-up Google dalam Chrome.',
+        'warning'
+      );
+
+    } else if (
+      err.code === 'auth/account-exists-with-different-credential'
+    ) {
+      showToast(
+        'Sila log masuk dengan emel dan kata laluan, kemudian pautkan akaun Google.',
+        'warning'
+      );
+
+    } else {
+      showToast(
+        'Log masuk Google gagal: ' + err.message,
+        'danger'
+      );
+    }
+
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+    // Lupa Kata Laluan
+    function openResetPasswordModal() {
+      document.getElementById('modal-reset-password').classList.add('show');
+    }
+
+
+// LUPA KATA LALUAN - FIREBASE AUTHENTICATION
+document.getElementById('form-reset-password').addEventListener('submit', async (e) => {
+
+  e.preventDefault();
+
+  const firebase = window.hrmsFirebase;
+  const email = document.getElementById('reset-email')
+    .value.trim().toLowerCase();
+
+  const btn = document.getElementById('btn-submit-reset');
+
+  if (!firebase?.auth) {
+    showToast('Sambungan Firebase belum tersedia.', 'danger');
+    return;
+  }
+
+  if (!email) {
+    showToast('Sila masukkan emel berdaftar.', 'warning');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Menghantar...';
+
+  try {
+
+    const { sendPasswordResetEmail } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js'
+    );
+
+    await sendPasswordResetEmail(firebase.auth, email);
+
+    closeModal('modal-reset-password');
+
+    showToast(
+      'Jika emel berdaftar, pautan tetapan semula kata laluan akan dihantar.',
+      'success'
+    );
+
+    document.getElementById('form-reset-password').reset();
+
+  } catch (err) {
+
+    console.error('Ralat Reset Password Firebase:', err);
+
+    showToast(
+      'Gagal menghantar permintaan: ' + err.message,
+      'danger'
+    );
+
+  } finally {
+
+    btn.disabled = false;
+    btn.textContent = 'Hantar Pautan';
+
+  }
+});
+
+   
+
+    // LOG KELUAR - FIREBASE AUTHENTICATION
+async function logout() {
+  const firebase = window.hrmsFirebase;
+
+  if (!firebase || !firebase.auth) {
+    showToast('Sambungan Firebase belum tersedia.', 'danger');
+    return;
+  }
+
+  try {
+    const { signOut } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js'
+    );
+
+    // TAMATKAN SESI FIREBASE
+    await signOut(firebase.auth);
+
+    // KOSONGKAN MAKLUMAT PENGGUNA
+    currentUser = null;
+
+    if (sessionTimeoutTimer) {
+      clearTimeout(sessionTimeoutTimer);
+      sessionTimeoutTimer = null;
+    }
+
+    // SEMBUNYIKAN SISTEM
+    document.getElementById('app-container').style.display = 'none';
+
+    // SEMBUNYIKAN MENU BAWAH TELEFON
+    const mobNav = document.getElementById('mobile-nav-bar');
+
+    if (mobNav) {
+      mobNav.classList.remove('logged-in');
+    }
+
+    // KEMBALI KE PAPARAN LOG MASUK
+    document.getElementById('auth-screen').style.display = 'flex';
+
+    showAuthView('login');
+
+    document.getElementById('login-password').value = '';
+
+    showToast(
+      'Anda telah berjaya log keluar dengan selamat.',
+      'success'
+    );
+
+    lucide.createIcons();
+
+  } catch (err) {
+    console.error('Ralat Firebase Logout:', err);
+
+    showToast(
+      'Log keluar gagal. Sila cuba semula.',
+      'danger'
+    );
+  }
+}
+    // Setup Antara Muka Pengguna Berdasarkan Peranan
+    function setupUserInterface() {
+      if (!currentUser) return;
+
+      document.getElementById('sidebar-name').textContent = currentUser.name;
+      document.getElementById('sidebar-role').textContent = currentUser.role;
+      document.getElementById('sidebar-avatar').textContent = currentUser.name.charAt(0);
+
+      document.getElementById('dash-greeting').textContent = `Selamat Datang, ${currentUser.name}!`;
+      document.getElementById('dash-emp-subtext').textContent = `Emel: ${currentUser.email || '-'}`;
+
+      // Profil Form Populate
+      
+
+document.getElementById('prof-name').value = currentUser.name;
+document.getElementById('prof-email').value = currentUser.email;
+document.getElementById('prof-phone').value = currentUser.phone || '';
+document.getElementById('prof-role').value = currentUser.role;
+
+      // Kawalan Menu Navigasi Berdasarkan Role
+      const isSupervisor = currentUser.role === 'SUPERVISOR' || currentUser.role === 'ADMIN';
+      const isAdmin = currentUser.role === 'ADMIN';
+
+      document.querySelectorAll('.supervisor-only').forEach(el => {
+        el.style.display = isSupervisor ? 'block' : 'none';
+      });
+
+     
+document.querySelectorAll('.admin-only').forEach(el => {
+  el.style.display = isAdmin ? 'block' : 'none';
+});
+
+// PAPAR BORANG KELAYAKAN UNTUK SUPERVISOR SAHAJA
+const entitlementCard = document.getElementById(
+  'supervisor-entitlement-card'
+);
+
+if (entitlementCard) {
+  entitlementCard.style.display =
+    currentUser.role === 'SUPERVISOR'
+      ? 'block'
+      : 'none';
+}
+
+
+      navigateTab('dashboard');
+      refreshNotifications();
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    // Navigasi Antara Tab
+    function navigateTab(tabKey) {
+      currentTab = tabKey;
+      document.querySelectorAll('.tab-view').forEach(view => view.style.display = 'none');
+      document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+
+      const targetView = document.getElementById(`view-${tabKey}`);
+      if (targetView) targetView.style.display = 'block';
+
+      const titles = {
+        'dashboard': 'Dashboard Ringkasan',
+        'my-leaves': 'Status Permohonan Cuti',
+        'leave-balance': 'Baki Cuti Semasa',
+        'attendance': 'Log Kehadiran Waktu Bertugas',
+        'my-profile': 'Profil Peribadi',
+        'supervisor-approval': 'Kelulusan Cuti Anggota Pasukan',
+        'team-calendar': 'Kalendar Cuti Pasukan',
+        'admin-employees': 'Pengurusan Pekerja Syarikat',
+        'admin-leaves': 'Semua Rekod Cuti Syarikat',
+        'admin-attendance': 'Semakan Kehadiran Pekerja',
+        'admin-audit': 'Log Audit & Keselamatan Sistem'
+      };
+      document.getElementById('page-current-title').textContent = titles[tabKey] || 'STAFF HRMS';
+
+      if (tabKey === 'dashboard') loadDashboardData();
+      if (tabKey === 'my-leaves') loadMyLeavesData();
+      if (tabKey === 'leave-balance') loadLeaveBalanceDetail();
+      if (tabKey === 'attendance') loadAttendanceData();
+      if (tabKey === 'supervisor-approval') loadSupervisorApprovalData();
+      if (tabKey === 'team-calendar') loadTeamCalendarData();
+      if (tabKey === 'admin-employees') loadAdminEmployeesData();
+      if (tabKey === 'admin-leaves') loadAdminLeavesData();
+      if (tabKey === 'admin-attendance') loadAdminAttendanceData();
+      if (tabKey === 'admin-audit') loadAdminAuditData();
+
+      document.getElementById('sidebar').classList.remove('open');
+      lucide.createIcons();
+    }
+
+    // Pengiraan Hari Bekerja (Isnin hingga Jumaat)
+    function calculateLeaveDays() {
+      const startVal = document.getElementById('apply-start-date').value;
+      const endVal = document.getElementById('apply-end-date').value;
+      const totalDaysInput = document.getElementById('apply-total-days');
+
+      if (!startVal || !endVal) {
+        totalDaysInput.value = 0;
+        return 0;
+      }
+
+      const start = new Date(startVal);
+      const end = new Date(endVal);
+
+      if (end < start) {
+        showToast('Tarikh akhir tidak boleh mendahului tarikh mula!', 'danger');
+        totalDaysInput.value = 0;
+        return 0;
+      }
+
+      let count = 0;
+      const cur = new Date(start);
+      while (cur <= end) {
+        const dayOfWeek = cur.getDay();
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+          count++;
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      totalDaysInput.value = count;
+      return count;
+    }
+
+    function openApplyLeaveModal() {
+      
+if (!currentUser) return;
+document.getElementById('apply-staff-name').value = currentUser.name;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      document.getElementById('apply-start-date').value = todayStr;
+      document.getElementById('apply-end-date').value = todayStr;
+      document.getElementById('apply-reason').value = '';
+      calculateLeaveDays();
+
+      document.getElementById('modal-apply-leave').classList.add('show');
+      lucide.createIcons();
+    }
+
+    
+// PENGHANTARAN PERMOHONAN CUTI - FIREBASE FIRESTORE
+document.getElementById('form-apply-leave').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const firebase = window.hrmsFirebase;
+
+  if (!firebase || !firebase.auth || !firebase.db || !currentUser) {
+    showToast('Sesi Firebase tidak tersedia. Sila log masuk semula.', 'danger');
+    return;
+  }
+
+  const uid = firebase.auth.currentUser?.uid;
+
+  if (!uid || uid !== currentUser.id) {
+    showToast('Identiti pengguna tidak sepadan. Sila log masuk semula.', 'danger');
+    return;
+  }
+
+  const leaveType = document.getElementById('apply-leave-type').value;
+  const startDate = document.getElementById('apply-start-date').value;
+  const endDate = document.getElementById('apply-end-date').value;
+  const totalDays = Number(document.getElementById('apply-total-days').value);
+  const reason = document.getElementById('apply-reason').value.trim();
+  const fileInput = document.getElementById('apply-attachment');
+
+  if (!startDate || !endDate || endDate < startDate) {
+    showToast('Sila semak tarikh permohonan.', 'warning');
+    return;
+  }
+
+  if (!Number.isInteger(totalDays) || totalDays < 1 || totalDays > 366) {
+    showToast('Bilangan hari cuti tidak sah.', 'warning');
+    return;
+  }
+
+  if (!reason || reason.length > 1000) {
+    showToast('Sebab permohonan wajib diisi (maksimum 1000 aksara).', 'warning');
+    return;
+  }
+
+  // Lampiran akan disambungkan pada peringkat berikutnya.
+  if (fileInput.files.length > 0) {
+    showToast('Muat naik lampiran belum diaktifkan. Sila kosongkan lampiran dahulu.', 'warning');
+    return;
+  }
+
+  const submitBtn = document.getElementById('btn-submit-leave');
+  submitBtn.disabled = true;
+
+  try {
+    const { collection, addDoc, serverTimestamp } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    const requestRef = await addDoc(
+      collection(firebase.db, 'leave_requests'),
+      {
+        user_id: uid,
+        staff_name: currentUser.name,
+        leave_type: leaveType,
+        start_date: startDate,
+        end_date: endDate,
+        total_days: totalDays,
+        reason: reason,
+        status: 'PENDING',
+        attachment_url: null,
+        created_at: serverTimestamp()
+      }
+    );
+
+    closeModal('modal-apply-leave');
+
+    document.getElementById('form-apply-leave').reset();
+
+    showToast(
+      'Permohonan cuti berjaya dihantar ke Firebase!',
+      'success'
+    );
+
+    console.log('ID permohonan Firestore:', requestRef.id);
+
+    // Paparan dashboard dan sejarah cuti akan disambungkan
+    // kepada Firestore pada langkah berikutnya.
+
+  
+  } catch (err) {
+    console.error('Ralat Permohonan Cuti Firestore:', err);
+
+    const errorCode = err.code || 'unknown';
+    let errorMessage = err.message || 'Ralat tidak diketahui';
+
+    if (errorCode === 'permission-denied') {
+      errorMessage = 'Firebase Firestore Security Rules tidak membenarkan permohonan disimpan.';
+    } else if (errorCode === 'unavailable') {
+      errorMessage = 'Sambungan Firebase tidak tersedia. Semak internet.';
+    } else if (errorCode === 'unauthenticated') {
+      errorMessage = 'Sesi log masuk tidak sah. Sila log masuk semula.';
+    }
+
+    showToast(errorMessage, 'danger');
+
+    alert(
+      'PERMOHONAN GAGAL\n\n' +
+      'Kod Ralat: ' + errorCode + '\n\n' +
+      'Punca: ' + errorMessage
+    );
+
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+    
+
+// CLOCK IN / CLOCK OUT - FIREBASE FIRESTORE PERCUMA
+async function recordAttendance(actionType) {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+
+  // SEMAK SESI PEKERJA
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id) {
+    showToast('Sila log masuk semula.', 'danger');
+    return;
+  }
+
+  if (!['CLOCK_IN', 'CLOCK_OUT'].includes(actionType)) {
+    showToast('Tindakan kehadiran tidak sah.', 'danger');
+    return;
+  }
+
+  const btn = document.getElementById(
+    actionType === 'CLOCK_IN'
+      ? 'btn-clock-in'
+      : 'btn-clock-out'
+  );
+
+  if (btn) btn.disabled = true;
+
+  try {
+
+    const {
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      serverTimestamp
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    // TARIKH MALAYSIA - UNTUK ID REKOD
+    function getMYTDate(daysAgo = 0) {
+      return new Date(
+        Date.now() + 8 * 3600000 - daysAgo * 86400000
+      ).toISOString().slice(0, 10);
+    }
+
+    function attendanceRef(date) {
+      return doc(
+        firebase.db,
+        'attendance_records',
+        uid + '_' + date
+      );
+    }
+
+    if (actionType === 'CLOCK_IN') {
+
+      const today = getMYTDate();
+      const ref = attendanceRef(today);
+
+      
+// TIDAK PERLU MEMBACA REKOD YANG BELUM WUJUD
+// FIREBASE RULES MENGHALANG REKOD BERGANDA
+// MENGGUNAKAN ID PENGGUNA DAN TARIKH
+
+      // SIMPAN CLOCK IN MENGGUNAKAN MASA PELAYAN
+      await setDoc(ref, {
+        user_id: uid,
+        staff_name: currentUser.name,
+        date: today,
+        clock_in_at: serverTimestamp(),
+        clock_out_at: null,
+        status: 'DALAM PROSES',
+        method: 'FIREBASE'
+      });
+
+      showToast(
+        'Clock In berjaya direkodkan!',
+        'success'
+      );
+
+    } else {
+
+      
+// CLOCK OUT - CARI REKOD MILIK SENDIRI
+const {
+  collection,
+  query,
+  where,
+  getDocs
+} = await import(
+  'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+);
+
+// BACA REKOD MENGIKUT ID PENGGUNA
+const ownRecords = await getDocs(
+  query(
+    collection(firebase.db, 'attendance_records'),
+    where('user_id', '==', uid)
+  )
+);
+
+// SOKONG CLOCK OUT HARI INI DAN SYIF SEMALAM
+const eligibleDates = [
+  getMYTDate(),
+  getMYTDate(1)
+];
+
+// CARI REKOD CLOCK IN YANG BELUM DITAMATKAN
+const activeRecord = ownRecords.docs.find(item => {
+
+  const att = item.data();
+
+  return eligibleDates.includes(att.date)
+    && att.status === 'DALAM PROSES'
+    && att.clock_out_at === null;
+
+});
+
+      if (!activeRecord) {
+        throw new Error(
+          'Tiada rekod Clock In aktif untuk ditamatkan.'
+        );
+      }
+
+      // SIMPAN CLOCK OUT MENGGUNAKAN MASA PELAYAN
+      await updateDoc(activeRecord.ref, {
+        clock_out_at: serverTimestamp(),
+        status: 'LENGKAP'
+      });
+
+      showToast(
+        'Clock Out berjaya direkodkan!',
+        'success'
+      );
+    }
+
+    // MUAT SEMULA JADUAL KEHADIRAN
+    await loadAttendanceData();
+
+  } catch (err) {
+
+    console.error('Ralat Kehadiran Firestore:', err);
+
+    showToast(
+      err.code === 'permission-denied'
+        ? 'Akses ditolak oleh Firebase Rules.'
+        : 'Gagal merekod kehadiran: ' + err.message,
+      'danger'
+    );
+
+  } finally {
+
+    if (btn) btn.disabled = false;
+
+  }
+}
+
+    
+    // MUAT DATA DASHBOARD - FIREBASE FIRESTORE
+    async function loadDashboardData() {
+      const firebase = window.hrmsFirebase;
+
+      if (!firebase || !firebase.db || !firebase.auth || !currentUser) return;
+
+      const uid = firebase.auth.currentUser?.uid;
+
+      if (!uid || uid !== currentUser.id) return;
+
+      const tbody = document.getElementById('dashboard-recent-leaves-body');
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center; padding:24px;">
+            Memuatkan permohonan daripada Firebase...
+          </td>
+        </tr>
+      `;
+
+      try {
+        const { collection, query, where, getDocs, doc, getDoc } = await import(
+  'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+);
+
+        const q = query(
+          collection(firebase.db, 'leave_requests'),
+          where('user_id', '==', uid)
+        );
+
+        const snapshot = await getDocs(q);
+
+        const requests = snapshot.docs.map(docSnap => ({
+          ...docSnap.data(),
+          id: docSnap.id
+        }));
+
+        requests.sort((a, b) => {
+          const timeA = a.created_at?.toMillis?.() || 0;
+          const timeB = b.created_at?.toMillis?.() || 0;
+          return timeB - timeA;
+        });
+
+        // KIRA JUMLAH PERMOHONAN
+const pending = requests.filter(r => r.status === 'PENDING').length;
+const approved = requests.filter(r => r.status === 'APPROVED').length;
+
+document.getElementById('stat-pending-requests').textContent = pending;
+document.getElementById('stat-approved-requests').textContent = approved;
+
+// KELAYAKAN DAN BAKI CUTI TAHUNAN
+const year = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  timeZone: 'Asia/Kuala_Lumpur'
+}).format(new Date());
+
+let entitled = null;
+
+try {
+  const entitlementRef = doc(
+    firebase.db,
+    'leave_entitlements',
+    uid,
+    'years',
+    year
+  );
+
+  const entitlementSnap = await getDoc(entitlementRef);
+
+  if (entitlementSnap.exists()) {
+    const value = entitlementSnap.data().entitled_days;
+    if (Number.isInteger(value) && value >= 0) {
+      entitled = value;
+    }
+  }
+} catch (error) {
+  console.error('Gagal membaca kelayakan cuti:', error);
+}
+
+// KIRA CUTI TAHUNAN YANG TELAH DILULUSKAN
+const used = requests
+  .filter(r =>
+    r.status === 'APPROVED' &&
+    r.leave_type === 'ANNUAL'
+  )
+  .reduce((sum, r) => {
+    const start = Math.max(
+      Date.parse(r.start_date + 'T00:00:00Z'),
+      Date.UTC(Number(year), 0, 1)
+    );
+
+    const end = Math.min(
+      Date.parse(r.end_date + 'T00:00:00Z'),
+      Date.UTC(Number(year), 11, 31)
+    );
+
+    let days = 0;
+
+    for (let t = start; t <= end; t += 86400000) {
+      const day = new Date(t).getUTCDay();
+      if (day !== 0 && day !== 6) days++;
+    }
+
+    return sum + days;
+  }, 0);
+
+// PAPARKAN JUMLAH DALAM DASHBOARD
+document.getElementById('stat-annual-entitled').textContent =
+  entitled === null ? '—' : entitled;
+
+document.getElementById('stat-annual-used').textContent = used;
+
+document.getElementById('stat-annual-balance').textContent =
+  entitled === null ? '—' : entitled - used;
+
+        tbody.innerHTML = '';
+
+        if (requests.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" style="text-align:center; padding:24px;">
+                Tiada rekod permohonan cuti.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        // PAPARKAN LIMA PERMOHONAN TERKINI
+        requests.slice(0, 5).forEach(req => {
+          const tr = document.createElement('tr');
+
+          const addCell = value => {
+            const td = document.createElement('td');
+            td.textContent = String(value ?? '-');
+            tr.appendChild(td);
+          };
+
+          addCell(req.id);
+          addCell(formatLeaveType(req.leave_type));
+          addCell(formatDate(req.start_date));
+          addCell(formatDate(req.end_date));
+          addCell((req.total_days ?? 0) + ' hari');
+
+          const statusTd = document.createElement('td');
+          statusTd.innerHTML = getStatusBadge(req.status);
+          tr.appendChild(statusTd);
+
+          addCell(
+            req.decision_by ||
+            (req.status === 'PENDING' ? 'Menunggu Kelulusan' : '-')
+          );
+
+          // Pembatalan disambungkan pada langkah berikutnya
+          addCell('-');
+
+          tbody.appendChild(tr);
+        });
+
+        lucide.createIcons();
+
+      } catch (err) {
+        console.error('Ralat Dashboard Firestore:', err);
+
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align:center; padding:24px;">
+              Gagal memuatkan permohonan.
+            </td>
+          </tr>
+        `;
+
+        showToast(
+          'Gagal membaca rekod Firebase: ' + err.message,
+          'danger'
+        );
+      }
+    }
+
+    
+    // MUAT STATUS PERMOHONAN CUTI - FIREBASE FIRESTORE
+    async function loadMyLeavesData() {
+      const firebase = window.hrmsFirebase;
+      const tbody = document.getElementById('my-leaves-full-body');
+      const uid = firebase?.auth?.currentUser?.uid;
+
+      if (!firebase?.db || !currentUser || !uid ||
+          uid !== currentUser.id) {
+        showToast('Sila log masuk semula.', 'warning');
+        return;
+      }
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" style="text-align:center;padding:24px;">
+            Memuatkan status permohonan...
+          </td>
+        </tr>
+      `;
+
+      try {
+        const { collection, query, where, getDocs } = await import(
+          'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+        );
+
+        const q = query(
+          collection(firebase.db, 'leave_requests'),
+          where('user_id', '==', uid)
+        );
+
+        const snapshot = await getDocs(q);
+
+        const requests = snapshot.docs.map(d => ({
+          ...d.data(),
+          id: d.id
+        }));
+
+        requests.sort((a, b) =>
+          (b.created_at?.toMillis?.() || 0) -
+          (a.created_at?.toMillis?.() || 0)
+        );
+
+        tbody.innerHTML = '';
+
+        if (requests.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="9" style="text-align:center;padding:24px;">
+                Tiada rekod permohonan cuti.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        requests.forEach(req => {
+          const tr = document.createElement('tr');
+
+          function addCell(value) {
+            const td = document.createElement('td');
+            td.textContent = String(value ?? '-');
+            tr.appendChild(td);
+            return td;
+          }
+
+          addCell(req.id);
+          addCell(formatLeaveType(req.leave_type));
+
+          addCell(formatDate(
+            req.created_at?.toDate?.() || req.start_date
+          ));
+
+          addCell(
+            formatDate(req.start_date) + ' - ' +
+            formatDate(req.end_date)
+          );
+
+          addCell((req.total_days ?? 0) + ' hari');
+
+          const reasonTd = addCell(req.reason || '-');
+          reasonTd.style.maxWidth = '200px';
+          reasonTd.style.overflowWrap = 'anywhere';
+
+          const status = ['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED']
+            .includes(req.status) ? req.status : 'PENDING';
+
+          const statusTd = document.createElement('td');
+          statusTd.innerHTML = getStatusBadge(status);
+          tr.appendChild(statusTd);
+
+          addCell(
+            (req.decision_by || '-') +
+            (req.rejection_reason
+              ? ' | Alasan: ' + req.rejection_reason
+              : '')
+          );
+
+          // Fungsi batal akan disambungkan kemudian
+          addCell(status === 'PENDING'
+            ? 'Menunggu keputusan'
+            : 'Selesai');
+
+          tbody.appendChild(tr);
+        });
+
+        lucide.createIcons();
+
+      } catch (err) {
+        console.error('Ralat Status Cuti Firebase:', err);
+
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align:center;padding:24px;">
+              Gagal memuatkan status permohonan.
+            </td>
+          </tr>
+        `;
+
+        showToast(
+          'Gagal membaca status: ' + err.message,
+          'danger'
+        );
+      }
+    }
+
+    
+/* BAKI CUTI TERPERINCI - FIREBASE FIRESTORE */
+async function loadLeaveBalanceDetail() {
+  const firebase = window.hrmsFirebase;
+  const tbody = document.getElementById(
+    'leave-balance-detail-body'
+  );
+
+  const uid = firebase?.auth?.currentUser?.uid;
+
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id) {
+    showToast('Sila log masuk semula.', 'warning');
+    return;
+  }
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="5" style="text-align:center;padding:24px;">
+        Memuatkan baki cuti daripada Firebase...
+      </td>
+    </tr>
+  `;
+
+  try {
+    const {
+      doc, getDoc, collection,
+      query, where, getDocs
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    const year = new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      timeZone: 'Asia/Kuala_Lumpur'
+    }).format(new Date());
+
+    const [entitlementSnap, requestSnap] = await Promise.all([
+      getDoc(doc(
+        firebase.db,
+        'leave_entitlements',
+        uid,
+        'years',
+        year
+      )),
+      getDocs(query(
+        collection(firebase.db, 'leave_requests'),
+        where('user_id', '==', uid)
+      ))
+    ]);
+
+    let entitled = null;
+
+    if (entitlementSnap.exists()) {
+      const value = entitlementSnap.data().entitled_days;
+
+      if (Number.isInteger(value) && value >= 0) {
+        entitled = value;
+      }
+    }
+
+    // KIRA CUTI TAHUNAN DILULUSKAN
+    const yearStart = Date.UTC(Number(year), 0, 1);
+    const yearEnd = Date.UTC(Number(year) + 1, 0, 1);
+    const oneDay = 86400000;
+
+    let used = 0;
+
+    requestSnap.forEach(snapshot => {
+      const r = snapshot.data();
+
+      if (r.status !== 'APPROVED' ||
+          r.leave_type !== 'ANNUAL') return;
+
+      const startDate = Date.parse(
+        r.start_date + 'T00:00:00Z'
+      );
+      const endDate = Date.parse(
+        r.end_date + 'T00:00:00Z'
+      );
+
+      if (!Number.isFinite(startDate) ||
+          !Number.isFinite(endDate)) return;
+
+      const start = Math.max(startDate, yearStart);
+      const end = Math.min(endDate, yearEnd - oneDay);
+
+      for (let t = start; t <= end; t += oneDay) {
+        const day = new Date(t).getUTCDay();
+
+        if (day !== 0 && day !== 6) {
+          used++;
+        }
+      }
+    });
+
+    const balance = entitled === null
+      ? null
+      : entitled - used;
+
+    let statusText = 'Belum Ditetapkan';
+    let statusClass = 'badge-pending';
+
+    if (balance !== null) {
+      if (balance > 0) {
+        statusText = 'Tersedia';
+        statusClass = 'badge-approved';
+      } else if (balance === 0) {
+        statusText = 'Habis';
+        statusClass = 'badge-rejected';
+      } else {
+        statusText = 'Melebihi Kelayakan';
+        statusClass = 'badge-rejected';
+      }
+    }
+
+    tbody.innerHTML = `
+      <tr>
+        <td><strong>Cuti Tahunan (${year})</strong></td>
+        <td>${entitled === null ? '—' : entitled + ' hari'}</td>
+        <td>${used} hari</td>
+        <td>
+          <strong style="color:var(--success);font-size:15px;">
+            ${balance === null ? '—' : balance + ' hari'}
+          </strong>
+        </td>
+        <td>
+          <span class="badge ${statusClass}">
+            ${statusText}
+          </span>
+        </td>
+      </tr>
+    `;
+
+  } catch (err) {
+    console.error('Ralat Baki Cuti Firebase:', err);
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center;padding:24px;">
+          Gagal memuatkan baki cuti.
+        </td>
+      </tr>
+    `;
+
+    showToast('Gagal membaca baki cuti: ' + err.message, 'danger');
+  }
+}
+
+    
+// BATAL PERMOHONAN CUTI - FIREBASE FIRESTORE
+async function cancelLeave(requestId) {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+
+  // SEMAK SESI PENGGUNA
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id) {
+
+    showToast('Sila log masuk semula.', 'danger');
+    return;
+  }
+
+  // SEMAK ID PERMOHONAN
+  if (!requestId || typeof requestId !== 'string') {
+    showToast('ID permohonan tidak sah.', 'danger');
+    return;
+  }
+
+  // PENGESAHAN PEMBATALAN
+  if (!confirm(
+    'Adakah anda pasti mahu membatalkan permohonan cuti ini?'
+  )) {
+    return;
+  }
+
+  try {
+
+    const {
+      doc,
+      runTransaction,
+      serverTimestamp
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    const requestRef = doc(
+      firebase.db,
+      'leave_requests',
+      requestId
+    );
+
+    // TRANSAKSI PEMBATALAN
+    await runTransaction(firebase.db, async (transaction) => {
+
+      const snapshot = await transaction.get(requestRef);
+
+      if (!snapshot.exists()) {
+        throw new Error('Permohonan cuti tidak ditemui.');
+      }
+
+      const request = snapshot.data();
+
+      // HANYA PEMILIK BOLEH BATAL
+      if (request.user_id !== uid) {
+        throw new Error(
+          'Anda tidak dibenarkan membatalkan permohonan ini.'
+        );
+      }
+
+      // HANYA STATUS PENDING BOLEH DIBATALKAN
+      if (request.status !== 'PENDING') {
+        throw new Error(
+          'Hanya permohonan menunggu kelulusan boleh dibatalkan.'
+        );
+      }
+
+      // KEMAS KINI STATUS DALAM FIRESTORE
+      transaction.update(requestRef, {
+        status: 'CANCELLED',
+        cancelled_at: serverTimestamp()
+      });
+
+    });
+
+    showToast(
+      'Permohonan cuti berjaya dibatalkan.',
+      'success'
+    );
+
+    // MUAT SEMULA DASHBOARD
+    await loadDashboardData();
+
+    // MUAT SEMULA STATUS PERMOHONAN
+    if (currentTab === 'my-leaves') {
+      await loadMyLeavesData();
+    }
+
+  } catch (err) {
+
+    console.error('Ralat Batal Cuti Firebase:', err);
+
+    showToast(
+      err.code === 'permission-denied'
+        ? 'Akses pembatalan ditolak. Semak Firestore Security Rules.'
+        : 'Gagal membatalkan permohonan: ' + err.message,
+      'danger'
+    );
+
+  }
+}
+
+    
+
+// REKOD KEHADIRAN STAFF - FIREBASE FIRESTORE
+async function loadAttendanceData() {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+  const tbody = document.getElementById('attendance-table-body');
+
+  if (!tbody) return;
+
+  // SEMAK SESI PENGGUNA
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id) {
+
+    showToast('Sila log masuk semula.', 'danger');
+    return;
+  }
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="6" style="text-align:center;padding:24px;">
+        Memuatkan rekod kehadiran Firebase...
+      </td>
+    </tr>
+  `;
+
+  try {
+
+    const {
+      collection,
+      query,
+      where,
+      getDocs
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    // AMBIL REKOD KEHADIRAN PENGGUNA SAHAJA
+    const snapshot = await getDocs(
+      query(
+        collection(firebase.db, 'attendance_records'),
+        where('user_id', '==', uid)
+      )
+    );
+
+    // SUSUN TARIKH TERKINI DAHULU
+    const records = snapshot.docs
+      .map(d => ({
+        id: d.id,
+        ...d.data()
+      }))
+      .sort((a, b) =>
+        String(b.date || '').localeCompare(
+          String(a.date || '')
+        )
+      );
+
+    tbody.replaceChildren();
+
+    // TIADA REKOD
+    if (records.length === 0) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center;padding:24px;">
+            Tiada rekod kehadiran ditemui.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+    // TUKAR FIREBASE TIMESTAMP KEPADA JAVASCRIPT DATE
+    function toJSDate(value) {
+
+      if (!value) return null;
+
+      if (typeof value.toDate === 'function') {
+        return value.toDate();
+      }
+
+      if (value instanceof Date) {
+        return value;
+      }
+
+      if (typeof value === 'string') {
+        const parsed = new Date(value);
+
+        if (!Number.isNaN(parsed.getTime())) {
+          return parsed;
+        }
+      }
+
+      return null;
+    }
+
+    // FORMAT MASA MALAYSIA (MYT)
+    function formatTimeMY(value, oldValue) {
+
+      const date = toJSDate(value);
+
+      if (!date) {
+        return oldValue || '-';
+      }
+
+      return new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Kuala_Lumpur',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }).format(date);
+    }
+
+    // KIRA JUMLAH JAM BEKERJA
+    function calculateWorkingHours(att) {
+
+      const clockIn = toJSDate(att.clock_in_at);
+      const clockOut = toJSDate(att.clock_out_at);
+
+      if (clockIn && clockOut &&
+          clockOut.getTime() >= clockIn.getTime()) {
+
+        const totalMinutes = Math.floor(
+          (clockOut.getTime() - clockIn.getTime()) / 60000
+        );
+
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+
+        return `${hours} jam ${minutes} minit`;
+      }
+
+      // SOKONG REKOD LAMA JIKA ADA
+      if (att.total_hours !== null &&
+          att.total_hours !== undefined &&
+          String(att.total_hours).trim() !== '') {
+
+        return att.total_hours;
+      }
+
+      if (att.status === 'DALAM PROSES') {
+        return 'Sedang Bertugas';
+      }
+
+      return '-';
+    }
+
+    // PAPARKAN REKOD KEHADIRAN
+    records.forEach(att => {
+
+      const tr = document.createElement('tr');
+
+      function addCell(value) {
+
+        const td = document.createElement('td');
+
+        td.textContent = String(value ?? '-');
+
+        tr.appendChild(td);
+
+        return td;
+      }
+
+      // 1. TARIKH KEHADIRAN
+      addCell(
+        att.date ? formatDate(att.date) : '-'
+      );
+
+      // 2. MASA CLOCK IN
+      addCell(
+        formatTimeMY(
+          att.clock_in_at,
+          att.clock_in
+        )
+      );
+
+      // 3. MASA CLOCK OUT
+      addCell(
+        formatTimeMY(
+          att.clock_out_at,
+          att.clock_out
+        )
+      );
+
+      // 4. JUMLAH JAM BEKERJA
+      addCell(
+        calculateWorkingHours(att)
+      );
+
+      // 5. STATUS KEHADIRAN
+      const statusTd = document.createElement('td');
+      const badge = document.createElement('span');
+
+      badge.className = 'badge ' +
+        (att.status === 'LENGKAP'
+          ? 'badge-approved'
+          : 'badge-pending');
+
+      badge.textContent =
+        att.status || 'DALAM PROSES';
+
+      statusTd.appendChild(badge);
+      tr.appendChild(statusTd);
+
+      // 6. KAEDAH KEHADIRAN
+      addCell(att.method || '-');
+
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+
+    console.error(
+      'Ralat Kehadiran STAFF Firebase:',
+      err
+    );
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align:center;padding:24px;">
+          Gagal memuatkan rekod kehadiran.
+        </td>
+      </tr>
+    `;
+
+    showToast(
+      'Gagal membaca rekod Firebase: ' + err.message,
+      'danger'
+    );
+  }
+}
+
+
+ // KEMAS KINI PROFIL - FIREBASE
+document.getElementById('profile-update-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const firebase = window.hrmsFirebase;
+  const user = firebase?.auth?.currentUser;
+
+  if (!firebase?.db || !user || !currentUser ||
+      user.uid !== currentUser.id) {
+    showToast('Sila log masuk semula.', 'danger');
+    return;
+  }
+
+  const phone = document.getElementById('prof-phone').value.trim();
+  const newPassword = document.getElementById('prof-new-password').value;
+
+  if (newPassword && newPassword.length < 8) {
+    showToast('Kata laluan minimum 8 aksara.', 'warning');
+    return;
+  }
+
+  try {
+    const { doc, updateDoc } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    await updateDoc(
+      doc(firebase.db, 'profiles', user.uid),
+      { phone: phone }
+    );
+
+    currentUser.phone = phone;
+
+    if (newPassword) {
+      const { updatePassword } = await import(
+        'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js'
+      );
+
+      await updatePassword(user, newPassword);
+      document.getElementById('prof-new-password').value = '';
+    }
+
+    showToast('Profil berjaya dikemaskini!', 'success');
+
+  } catch (err) {
+    console.error('Ralat Profil Firebase:', err);
+
+    showToast(
+      err.code === 'auth/requires-recent-login'
+        ? 'Nombor telefon disimpan. Log masuk semula sebelum menukar kata laluan.'
+        : 'Gagal kemaskini profil: ' + err.message,
+      'danger'
+    );
+  }
+});
+
+    
+ // KELULUSAN CUTI PENYELIA - FIREBASE FIRESTORE
+async function loadSupervisorApprovalData() {
+  const firebase = window.hrmsFirebase;
+  const tbody = document.getElementById('supervisor-leaves-body');
+  const pill = document.getElementById('sup-pending-pill');
+  const badge = document.getElementById('sup-badge-count');
+
+  if (!firebase?.db || !firebase?.auth?.currentUser || !currentUser) {
+    showToast('Sila log masuk semula.', 'warning');
+    return;
+  }
+
+  const uid = firebase.auth.currentUser.uid;
+
+  if (uid !== currentUser.id) {
+    showToast('Sesi pengguna tidak sepadan.', 'danger');
+    return;
+  }
+
+  if (!['SUPERVISOR', 'ADMIN'].includes(currentUser.role)) {
+    showToast('Akses penyelia tidak dibenarkan.', 'danger');
+    return;
+  }
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="8" style="text-align:center;padding:24px;">
+        Memuatkan permohonan daripada Firebase...
+      </td>
+    </tr>
+  `;
+
+  try {
+    const { collection, query, where, getDocs } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    const q = query(
+      collection(firebase.db, 'leave_requests'),
+      where('status', '==', 'PENDING')
+    );
+
+    const snapshot = await getDocs(q);
+
+    const requests = snapshot.docs.map(d => ({
+      ...d.data(),
+      id: d.id
+    }));
+
+    requests.sort((a, b) =>
+      (b.created_at?.toMillis?.() || 0) -
+      (a.created_at?.toMillis?.() || 0)
+    );
+
+    pill.textContent = `${requests.length} Menunggu Semakan`;
+
+    badge.textContent = requests.length;
+    badge.style.display = requests.length > 0
+      ? 'inline-block'
+      : 'none';
+
+    tbody.innerHTML = '';
+
+    if (requests.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center;padding:24px;">
+            Tiada permohonan menunggu kelulusan.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    requests.forEach(req => {
+      const tr = document.createElement('tr');
+
+      function addCell(value) {
+        const td = document.createElement('td');
+        td.textContent = String(value ?? '-');
+        tr.appendChild(td);
+        return td;
+      }
+
+      const staffName = req.staff_name || 'Pekerja';
+
+      addCell(staffName);
+      addCell(req.department || '-');
+      addCell(formatLeaveType(req.leave_type));
+
+      const dateCell = addCell(
+        formatDate(req.created_at?.toDate?.() || req.start_date) +
+        '\nCuti: ' +
+        formatDate(req.start_date) + ' - ' +
+        formatDate(req.end_date)
+      );
+      dateCell.style.whiteSpace = 'pre-line';
+
+      addCell((req.total_days ?? 0) + ' hari');
+      addCell(req.reason || '-');
+      addCell(req.attachment_url ? 'Ada lampiran' : '-');
+
+      const actionTd = document.createElement('td');
+      const actionDiv = document.createElement('div');
+
+      actionDiv.style.display = 'flex';
+      actionDiv.style.gap = '6px';
+
+      // Elakkan nama pekerja ditafsir sebagai HTML
+      const safeName = staffName.replace(/[&<>"']/g, c => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[c]);
+
+      const approveBtn = document.createElement('button');
+      approveBtn.className = 'btn btn-success btn-sm';
+      approveBtn.textContent = 'Luluskan';
+      approveBtn.onclick = () =>
+        openDecisionModal(req.id, 'APPROVE', safeName);
+
+      const rejectBtn = document.createElement('button');
+      rejectBtn.className = 'btn btn-danger btn-sm';
+      rejectBtn.textContent = 'Tolak';
+      rejectBtn.onclick = () =>
+        openDecisionModal(req.id, 'REJECT', safeName);
+
+      actionDiv.appendChild(approveBtn);
+      actionDiv.appendChild(rejectBtn);
+      actionTd.appendChild(actionDiv);
+      tr.appendChild(actionTd);
+
+      tbody.appendChild(tr);
+    });
+
+    lucide.createIcons();
+
+  } catch (err) {
+    console.error('Ralat Kelulusan Firebase:', err);
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align:center;padding:24px;">
+          Gagal memuatkan permohonan penyelia.
+        </td>
+      </tr>
+    `;
+
+    showToast(
+      'Gagal membaca rekod penyelia. Semak Firestore Security Rules.',
+      'danger'
+    );
+  }
+}
+
+
+ // SENARAI STAFF UNTUK KELAYAKAN CUTI TAHUNAN
+async function loadSupervisorStaffList() {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+
+  const select = document.getElementById(
+    'supervisor-staff-select'
+  );
+
+  if (!select) return;
+
+  // HANYA SUPERVISOR
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id ||
+      currentUser.role !== 'SUPERVISOR') {
+
+    showToast('Akses penyelia tidak dibenarkan.', 'danger');
+    return;
+  }
+
+  select.innerHTML =
+    '<option value="">Memuatkan senarai STAFF...</option>';
+
+  try {
+
+    
+const {
+  collection,
+  query,
+  where,
+  getDocs
+} = await import(
+  'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+);
+
+// AMBIL STAFF AKTIF SAHAJA
+const staffQuery = query(
+  collection(firebase.db, 'profiles'),
+  where('role', '==', 'STAFF'),
+  where('is_active', '==', true)
+);
+
+const snapshot = await getDocs(staffQuery);
+
+
+    const staffList = snapshot.docs
+      .map(d => ({
+        id: d.id,
+        ...d.data()
+      }))
+      .filter(u =>
+        u.role === 'STAFF' &&
+        u.is_active === true
+      )
+      .sort((a, b) =>
+        (a.name || '').localeCompare(b.name || '')
+      );
+
+    select.innerHTML =
+      '<option value="">-- Pilih Nama STAFF --</option>';
+
+    staffList.forEach(staff => {
+
+      const option = document.createElement('option');
+
+      option.value = staff.id;
+      option.textContent = staff.name || 'Tanpa Nama';
+
+      select.appendChild(option);
+
+    });
+
+    if (staffList.length === 0) {
+      showToast('Tiada STAFF aktif ditemui.', 'warning');
+    } else {
+      showToast(
+        `${staffList.length} STAFF berjaya dimuatkan.`,
+        'success'
+      );
+    }
+
+  } catch (err) {
+
+    console.error('Ralat Senarai STAFF:', err);
+
+    select.innerHTML =
+      '<option value="">Gagal memuatkan STAFF</option>';
+
+    showToast(
+      'Gagal membaca senarai STAFF daripada Firebase.',
+      'danger'
+    );
+
+  }
+}
+
+
+// SIMPAN KELAYAKAN CUTI TAHUNAN STAFF - SUPERVISOR
+async function saveSupervisorEntitlement() {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+
+  const staffSelect = document.getElementById(
+    'supervisor-staff-select'
+  );
+
+  const daysInput = document.getElementById(
+    'supervisor-entitlement-days'
+  );
+
+  const btn = document.getElementById(
+    'btn-save-entitlement'
+  );
+
+  // SEMAK SESI DAN PERANAN PENYELIA
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id ||
+      currentUser.role !== 'SUPERVISOR') {
+
+    showToast('Akses SUPERVISOR diperlukan.', 'danger');
+    return;
+  }
+
+  const staffId = staffSelect?.value || '';
+  const rawDays = daysInput?.value.trim() || '';
+  const entitledDays = Number(rawDays);
+
+  // SEMAK STAFF DIPILIH
+  if (!staffId || staffId === uid) {
+    showToast('Sila pilih STAFF yang sah.', 'warning');
+    return;
+  }
+
+  // SEMAK BILANGAN HARI
+  if (
+    rawDays === '' ||
+    !Number.isInteger(entitledDays) ||
+    entitledDays < 0 ||
+    entitledDays > 366
+  ) {
+
+    showToast(
+      'Kelayakan mestilah nombor bulat antara 0 hingga 366 hari.',
+      'warning'
+    );
+
+    return;
+  }
+
+  const confirmed = confirm(
+    `Tetapkan kelayakan cuti tahunan kepada ${entitledDays} hari?`
+  );
+
+  if (!confirmed) return;
+
+  if (btn) btn.disabled = true;
+
+  try {
+
+    const {
+      doc,
+      setDoc,
+      serverTimestamp
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    // TAHUN SEMASA MALAYSIA
+    const year = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kuala_Lumpur',
+      year: 'numeric'
+    }).format(new Date());
+
+    // SIMPAN KELAYAKAN DALAM FIRESTORE
+    await setDoc(
+      doc(
+        firebase.db,
+        'leave_entitlements',
+        staffId,
+        'years',
+        year
+      ),
+      {
+        entitled_days: entitledDays,
+        updated_by_uid: uid,
+        updated_at: serverTimestamp()
+      }
+    );
+
+    showToast(
+      `Kelayakan cuti tahun ${year} berjaya disimpan!`,
+      'success'
+    );
+
+  } catch (err) {
+
+    console.error(
+      'Ralat Simpan Kelayakan Cuti Firebase:',
+      err
+    );
+
+    showToast(
+      err.code === 'permission-denied'
+        ? 'Akses ditolak oleh Firebase Rules.'
+        : 'Gagal menyimpan kelayakan: ' + err.message,
+      'danger'
+    );
+
+  } finally {
+
+    if (btn) btn.disabled = false;
+
+  }
+}
+
+
+    function openDecisionModal(requestId, action, staffName) {
+      document.getElementById('decision-request-id').value = requestId;
+      document.getElementById('decision-action-type').value = action;
+      const rejectGroup = document.getElementById('reject-reason-group');
+      const confirmBtn = document.getElementById('decision-confirm-btn');
+
+      if (action === 'APPROVE') {
+        document.getElementById('decision-modal-title').textContent = 'Pengesahan Kelulusan Cuti';
+        document.getElementById('decision-summary-text').innerHTML = `Adakah anda bersetuju untuk <strong>MELULUSKAN</strong> permohonan cuti kakitangan <strong>${staffName}</strong>? Baki cuti pemohon akan ditolak secara automatik.`;
+        rejectGroup.style.display = 'none';
+        confirmBtn.className = 'btn btn-success';
+        confirmBtn.textContent = 'Ya, Luluskan Permohonan';
+      } else {
+        document.getElementById('decision-modal-title').textContent = 'Penolakan Permohonan Cuti';
+        document.getElementById('decision-summary-text').innerHTML = `Sila nyatakan sebab rasmi mengapa permohonan <strong>${staffName}</strong> ini <strong>DITOLAK</strong>:`;
+        rejectGroup.style.display = 'block';
+        document.getElementById('decision-reject-reason').value = '';
+        confirmBtn.className = 'btn btn-danger';
+        confirmBtn.textContent = 'Sahkan Penolakan';
+      }
+
+      document.getElementById('modal-decision').classList.add('show');
+    }
+
+    
+ // KEPUTUSAN PENYELIA - FIREBASE FIRESTORE
+async function executeDecision() {
+
+  const firebase = window.hrmsFirebase;
+
+  const requestId = document.getElementById('decision-request-id').value;
+  const action = document.getElementById('decision-action-type').value;
+  const rejectReason = document.getElementById('decision-reject-reason').value.trim();
+  const confirmBtn = document.getElementById('decision-confirm-btn');
+
+  const uid = firebase?.auth?.currentUser?.uid;
+
+  // SEMAK SESI PENGGUNA
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id) {
+    showToast('Sila log masuk semula.', 'danger');
+    return;
+  }
+
+  // SEMAK PERANAN
+  if (!['SUPERVISOR', 'ADMIN'].includes(currentUser.role)) {
+    showToast('Anda tidak mempunyai kuasa meluluskan cuti.', 'danger');
+    return;
+  }
+
+  // SEMAK TINDAKAN
+  if (!requestId || !['APPROVE', 'REJECT'].includes(action)) {
+    showToast('Maklumat keputusan tidak sah.', 'danger');
+    return;
+  }
+
+  // SEBAB PENOLAKAN
+  if (action === 'REJECT' &&
+      (!rejectReason || rejectReason.length > 1000)) {
+    showToast('Masukkan sebab penolakan (maksimum 1000 aksara).', 'warning');
+    return;
+  }
+
+  confirmBtn.disabled = true;
+
+  try {
+
+    const {
+      doc,
+      runTransaction,
+      serverTimestamp
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    const requestRef = doc(
+      firebase.db,
+      'leave_requests',
+      requestId
+    );
+
+    const profileRef = doc(
+      firebase.db,
+      'profiles',
+      uid
+    );
+
+    // TRANSAKSI KEPUTUSAN FIRESTORE
+    await runTransaction(firebase.db, async (transaction) => {
+
+      const profileSnap = await transaction.get(profileRef);
+      const requestSnap = await transaction.get(requestRef);
+
+      if (!profileSnap.exists()) {
+        throw new Error('Profil penyelia tidak ditemui.');
+      }
+
+      const profile = profileSnap.data();
+
+      if (profile.is_active !== true ||
+          !['SUPERVISOR', 'ADMIN'].includes(profile.role)) {
+        throw new Error('Akaun tiada kebenaran penyelia.');
+      }
+
+      if (!requestSnap.exists()) {
+        throw new Error('Permohonan cuti tidak ditemui.');
+      }
+
+      const requestData = requestSnap.data();
+
+      // HANYA PERMOHONAN PENDING
+      if (requestData.status !== 'PENDING') {
+        throw new Error('Permohonan ini telah diproses.');
+      }
+
+      // HALANG MELULUSKAN PERMOHONAN SENDIRI
+      if (requestData.user_id === uid) {
+        throw new Error('Tidak boleh membuat keputusan untuk cuti sendiri.');
+      }
+
+      const updateData = {
+        status: action === 'APPROVE'
+          ? 'APPROVED'
+          : 'REJECTED',
+
+        decision_by: profile.name,
+        decision_by_uid: uid,
+        decided_at: serverTimestamp()
+      };
+
+      if (action === 'REJECT') {
+        updateData.rejection_reason = rejectReason;
+      }
+
+      transaction.update(requestRef, updateData);
+
+    });
+
+    // TUTUP BORANG SELEPAS BERJAYA
+    closeModal('modal-decision');
+
+    showToast(
+      action === 'APPROVE'
+        ? 'Permohonan cuti berjaya diluluskan!'
+        : 'Permohonan cuti berjaya ditolak!',
+      'success'
+    );
+
+    // MUAT SEMULA SENARAI PENYELIA
+    await loadSupervisorApprovalData();
+
+    refreshNotifications();
+
+  } catch (err) {
+
+    console.error('Ralat Keputusan Firebase:', err);
+
+    if (err.code === 'permission-denied') {
+      showToast(
+        'Akses ditolak. Semak Firebase Firestore Security Rules.',
+        'danger'
+      );
+    } else {
+      showToast(
+        'Gagal memproses keputusan: ' + err.message,
+        'danger'
+      );
+    }
+
+  } finally {
+    confirmBtn.disabled = false;
+  }
+}
+
+    
+// KALENDAR PASUKAN - FIREBASE FIRESTORE
+async function loadTeamCalendarData() {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+  const container = document.getElementById('team-calendar-cards');
+
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id ||
+      !['SUPERVISOR', 'ADMIN'].includes(currentUser.role)) {
+    showToast('Akses tidak dibenarkan.', 'danger');
+    return;
+  }
+
+  container.textContent = 'Memuatkan kalendar pasukan...';
+
+  try {
+    const { collection, query, where, getDocs } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    const snapshot = await getDocs(
+      query(
+        collection(firebase.db, 'leave_requests'),
+        where('status', '==', 'APPROVED')
+      )
+    );
+
+    const requests = snapshot.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) =>
+        (a.start_date || '').localeCompare(b.start_date || '')
+      );
+
+    container.innerHTML = '';
+
+    if (requests.length === 0) {
+      container.textContent = 'Tiada cuti diluluskan untuk pasukan.';
+      return;
+    }
+
+    requests.forEach(r => {
+      const card = document.createElement('div');
+
+      card.style.cssText = `
+        background:var(--slate-50);
+        border:1px solid var(--slate-200);
+        border-radius:var(--radius-md);
+        padding:16px;
+      `;
+
+      const name = document.createElement('h4');
+      name.textContent = r.staff_name || 'Pekerja';
+      name.style.marginBottom = '10px';
+
+      const type = document.createElement('p');
+      type.textContent = formatLeaveType(r.leave_type);
+
+      const dates = document.createElement('p');
+      dates.textContent =
+        formatDate(r.start_date) + ' - ' +
+        formatDate(r.end_date);
+
+      dates.style.color = 'var(--accent)';
+      dates.style.marginTop = '8px';
+
+      const days = document.createElement('span');
+      days.className = 'badge badge-approved';
+      days.textContent = (r.total_days || 0) + ' Hari';
+      days.style.marginTop = '10px';
+
+      card.append(name, type, dates, days);
+      container.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error('Ralat Kalendar Firebase:', err);
+    container.textContent = 'Gagal memuatkan kalendar pasukan.';
+    showToast('Gagal membaca rekod Firebase.', 'danger');
+  }
+}
+
+    
+// PENGURUSAN PEKERJA ADMIN - FIREBASE FIRESTORE
+async function loadAdminEmployeesData() {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+  const tbody = document.getElementById('admin-employees-body');
+
+  // SEMAK SESI DAN PERANAN ADMIN
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id ||
+      currentUser.role !== 'ADMIN') {
+
+    showToast('Akses ADMIN diperlukan.', 'danger');
+    return;
+  }
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="8" style="text-align:center;padding:24px;">
+        Memuatkan senarai pekerja daripada Firebase...
+      </td>
+    </tr>
+  `;
+
+  try {
+
+    const {
+      collection,
+      getDocs
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    // AMBIL PROFIL PEKERJA DAN REKOD CUTI
+    const [usersSnap, leavesSnap] = await Promise.all([
+
+      getDocs(
+        collection(firebase.db, 'profiles')
+      ),
+
+      getDocs(
+        collection(firebase.db, 'leave_requests')
+      )
+
+    ]);
+
+    // SENARAI PENGGUNA
+    const users = usersSnap.docs
+      .map(d => ({
+        ...d.data(),
+        id: d.id
+      }))
+      .sort((a, b) =>
+        (a.name || '').localeCompare(b.name || '')
+      );
+
+    // SENARAI PERMOHONAN CUTI
+    const leaves = leavesSnap.docs.map(d => d.data());
+
+    // KIRA JUMLAH AKAUN AKTIF
+    const activeCount = users.filter(
+      u => u.is_active === true
+    ).length;
+
+    document.getElementById(
+      'admin-total-active-staff'
+    ).textContent = activeCount;
+
+    // KIRA JUMLAH PERMOHONAN CUTI
+    document.getElementById(
+      'admin-total-requests'
+    ).textContent = leaves.length;
+
+    // TARIKH SEMASA MALAYSIA
+    const today = new Date(
+      Date.now() + 8 * 60 * 60 * 1000
+    ).toISOString().slice(0, 10);
+
+    // KIRA PEKERJA YANG SEDANG BERCUTI
+    const onLeave = new Set(
+      leaves
+        .filter(l =>
+          l.status === 'APPROVED' &&
+          l.start_date &&
+          l.end_date &&
+          today >= l.start_date &&
+          today <= l.end_date
+        )
+        .map(l => l.user_id)
+    );
+
+    document.getElementById(
+      'admin-on-leave-today'
+    ).textContent = onLeave.size;
+
+    // KOSONGKAN JADUAL
+    tbody.replaceChildren();
+
+    if (users.length === 0) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center;padding:24px;">
+            Tiada pekerja ditemui.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+    // PAPARKAN SENARAI PEKERJA
+    users.forEach(u => {
+
+      const tr = document.createElement('tr');
+
+      function addCell(value) {
+        const td = document.createElement('td');
+        td.textContent = String(value ?? '-');
+        tr.appendChild(td);
+        return td;
+      }
+
+      addCell(u.employee_id || u.id);
+      addCell(u.name || '-');
+      addCell(u.email || '-');
+      addCell(u.department || '-');
+      addCell(u.supervisor_name || u.supervisor_id || '-');
+      addCell(u.role || 'STAFF');
+
+      // STATUS AKAUN
+      const statusTd = document.createElement('td');
+      const statusBadge = document.createElement('span');
+
+      statusBadge.className = 'badge ' +
+        (u.is_active === true
+          ? 'badge-approved'
+          : 'badge-rejected');
+
+      statusBadge.textContent =
+        u.is_active === true
+          ? 'Aktif'
+          : 'Tidak Aktif';
+
+      statusTd.appendChild(statusBadge);
+      tr.appendChild(statusTd);
+
+      // BUTANG AKTIFKAN / NYAHAKTIF
+      const actionTd = document.createElement('td');
+      const btn = document.createElement('button');
+
+      btn.className = 'btn btn-secondary btn-sm';
+
+      btn.textContent =
+        u.is_active === true
+          ? 'Nyahaktif'
+          : 'Aktifkan';
+
+      // HANYA AKAUN STAFF BOLEH DIUBAH
+      btn.disabled =
+        u.id === uid ||
+        u.role !== 'STAFF';
+
+      btn.onclick = () => {
+        toggleUserStatus(
+          u.id,
+          u.is_active === true
+        );
+      };
+
+      actionTd.appendChild(btn);
+      tr.appendChild(actionTd);
+
+      tbody.appendChild(tr);
+
+    });
+
+  } catch (err) {
+
+    console.error(
+      'Ralat Pengurusan Pekerja Firebase:',
+      err
+    );
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align:center;padding:24px;">
+          Gagal memuatkan senarai pekerja.
+        </td>
+      </tr>
+    `;
+
+    showToast(
+      err.code === 'permission-denied'
+        ? 'Akses ditolak. Firebase Security Rules perlu dikemas kini.'
+        : 'Gagal membaca senarai pekerja: ' + err.message,
+      'danger'
+    );
+
+  }
+}
+    
+// AKTIFKAN / NYAHAKTIF STAFF - FIREBASE FIRESTORE
+async function toggleUserStatus(userId, currentStatus) {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id ||
+      currentUser.role !== 'ADMIN') {
+    showToast('Akses ADMIN diperlukan.', 'danger');
+    return;
+  }
+
+  if (!userId || userId === uid) {
+    showToast('Tidak boleh mengubah akaun sendiri.', 'danger');
+    return;
+  }
+
+  const newStatus = !currentStatus;
+
+  if (!confirm(
+    `Adakah anda pasti mahu ${newStatus ? 'mengaktifkan' : 'menyahaktifkan'} akaun pekerja ini?`
+  )) {
+    return;
+  }
+
+  try {
+
+    const { doc, runTransaction } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    await runTransaction(firebase.db, async (transaction) => {
+
+      const adminRef = doc(firebase.db, 'profiles', uid);
+      const staffRef = doc(firebase.db, 'profiles', userId);
+
+      const adminSnap = await transaction.get(adminRef);
+      const staffSnap = await transaction.get(staffRef);
+
+      if (!adminSnap.exists() ||
+          adminSnap.data().role !== 'ADMIN' ||
+          adminSnap.data().is_active !== true) {
+        throw new Error('Akaun ADMIN tidak sah.');
+      }
+
+      if (!staffSnap.exists()) {
+        throw new Error('Profil pekerja tidak ditemui.');
+      }
+
+      const staff = staffSnap.data();
+
+      if (staff.role !== 'STAFF') {
+        throw new Error('Hanya akaun STAFF boleh diubah.');
+      }
+
+      if (staff.is_active !== currentStatus) {
+        throw new Error('Status telah berubah. Muat semula senarai.');
+      }
+
+      transaction.update(staffRef, {
+        is_active: newStatus
+      });
+
+    });
+
+    showToast(
+      `Akaun pekerja berjaya ${newStatus ? 'diaktifkan' : 'dinyahaktifkan'}.`,
+      'success'
+    );
+
+    await loadAdminEmployeesData();
+
+  } catch (err) {
+
+    console.error('Ralat Status Pekerja Firebase:', err);
+
+    showToast(
+      err.code === 'permission-denied'
+        ? 'Akses ditolak. Firebase Rules perlu dikemas kini.'
+        : 'Gagal mengubah status: ' + err.message,
+      'danger'
+    );
+  }
+}
+
+    
+// SEMUA REKOD CUTI ADMIN - FIREBASE FIRESTORE
+async function loadAdminLeavesData() {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+  const tbody = document.getElementById('admin-leaves-body');
+
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id ||
+      currentUser.role !== 'ADMIN') {
+    tbody.innerHTML = `
+      <tr><td colspan="8" style="text-align:center;padding:24px;">
+        Akses ADMIN diperlukan.
+      </td></tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = `
+    <tr><td colspan="8" style="text-align:center;padding:24px;">
+      Memuatkan rekod daripada Firebase...
+    </td></tr>
+  `;
+
+  try {
+    const { collection, getDocs } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    const snapshot = await getDocs(
+      collection(firebase.db, 'leave_requests')
+    );
+
+    const leaves = snapshot.docs
+      .map(d => ({
+        id: d.id,
+        ...d.data()
+      }))
+      .sort((a, b) =>
+        (b.created_at?.toMillis?.() || 0) -
+        (a.created_at?.toMillis?.() || 0)
+      );
+
+    tbody.innerHTML = '';
+
+    if (leaves.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan="8" style="text-align:center;padding:24px;">
+          Tiada rekod permohonan cuti.
+        </td></tr>
+      `;
+      return;
+    }
+
+    leaves.forEach(req => {
+
+      const tr = document.createElement('tr');
+
+      function addCell(value) {
+        const td = document.createElement('td');
+        td.textContent = String(value ?? '-');
+        tr.appendChild(td);
+        return td;
+      }
+
+      addCell(req.id);
+      addCell(req.staff_name || 'Pekerja');
+      addCell(formatLeaveType(req.leave_type));
+      addCell(formatDate(req.start_date));
+      addCell(formatDate(req.end_date));
+      addCell((req.total_days ?? 0) + ' hari');
+
+      const statusTd = document.createElement('td');
+      statusTd.innerHTML = getStatusBadge(req.status);
+      tr.appendChild(statusTd);
+
+      addCell(req.decision_by || '-');
+
+      tbody.appendChild(tr);
+    });
+
+    lucide.createIcons();
+
+  } catch (err) {
+
+    console.error('Ralat Rekod Cuti ADMIN Firebase:', err);
+
+    tbody.innerHTML = `
+      <tr><td colspan="8" style="text-align:center;padding:24px;">
+        Gagal memuatkan rekod cuti.
+      </td></tr>
+    `;
+
+    showToast(
+      'Gagal membaca rekod Firebase: ' + err.message,
+      'danger'
+    );
+  }
+}
+
+    
+// SEMAKAN KEHADIRAN ADMIN - FIREBASE FIRESTORE
+async function loadAdminAttendanceData() {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+  const tbody = document.getElementById('admin-attendance-body');
+
+  // SEMAK SESI DAN PERANAN ADMIN
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id ||
+      currentUser.role !== 'ADMIN') {
+
+    showToast('Akses ADMIN diperlukan.', 'danger');
+    return;
+  }
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="6" style="text-align:center;padding:24px;">
+        Memuatkan rekod kehadiran daripada Firebase...
+      </td>
+    </tr>
+  `;
+
+  try {
+
+    const {
+      collection,
+      query,
+      orderBy,
+      limit,
+      getDocs
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    // AMBIL 100 REKOD KEHADIRAN TERKINI
+    const snapshot = await getDocs(
+      query(
+        collection(firebase.db, 'attendance_records'),
+        orderBy('date', 'desc'),
+        limit(100)
+      )
+    );
+
+    // KOSONGKAN JADUAL
+    tbody.replaceChildren();
+
+    // TIADA REKOD KEHADIRAN
+    if (snapshot.empty) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center;padding:24px;">
+            Tiada rekod kehadiran ditemui.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+    // PAPARKAN REKOD KEHADIRAN PEKERJA
+    snapshot.forEach(item => {
+
+      const att = item.data();
+      const tr = document.createElement('tr');
+
+      function addCell(value) {
+        const td = document.createElement('td');
+        td.textContent = String(value ?? '-');
+        tr.appendChild(td);
+        return td;
+      }
+
+      // NAMA PEKERJA
+      addCell(att.staff_name || att.user_id || 'Pekerja');
+
+      // TARIKH
+      addCell(formatDate(att.date));
+
+      
+// FORMAT FIREBASE TIMESTAMP KEPADA MASA MALAYSIA
+function formatAdminTime(value, oldValue) {
+
+  if (value && typeof value.toDate === 'function') {
+
+    return new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kuala_Lumpur',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(value.toDate());
+
+  }
+
+  // SOKONG REKOD LAMA
+  return oldValue || '-';
+}
+
+// CLOCK IN
+addCell(
+  formatAdminTime(
+    att.clock_in_at,
+    att.clock_in
+  )
+);
+
+// CLOCK OUT
+addCell(
+  formatAdminTime(
+    att.clock_out_at,
+    att.clock_out
+  )
+);
+
+// KIRA JUMLAH MASA BEKERJA
+const clockInDate = att.clock_in_at?.toDate?.();
+const clockOutDate = att.clock_out_at?.toDate?.();
+
+if (
+  clockInDate &&
+  clockOutDate &&
+  clockOutDate.getTime() >= clockInDate.getTime()
+) {
+
+  const totalMinutes = Math.floor(
+    (clockOutDate.getTime() -
+     clockInDate.getTime()) / 60000
+  );
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  addCell(`${hours} jam ${minutes} minit`);
+
+} else if (
+  att.total_hours !== null &&
+  att.total_hours !== undefined &&
+  String(att.total_hours).trim() !== ''
+) {
+
+  // REKOD LAMA
+  addCell(att.total_hours);
+
+} else {
+
+  addCell(
+    att.status === 'DALAM PROSES'
+      ? 'Sedang Bertugas'
+      : '-'
+  );
+
+}
+
+      // STATUS KEHADIRAN
+      const statusTd = document.createElement('td');
+      const badge = document.createElement('span');
+
+      badge.className = 'badge ' +
+        (att.status === 'LENGKAP'
+          ? 'badge-approved'
+          : 'badge-pending');
+
+      badge.textContent = att.status || 'DALAM PROSES';
+
+      statusTd.appendChild(badge);
+      tr.appendChild(statusTd);
+
+      tbody.appendChild(tr);
+
+    });
+
+  } catch (err) {
+
+    console.error(
+      'Ralat Semakan Kehadiran ADMIN Firebase:',
+      err
+    );
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align:center;padding:24px;">
+          Gagal memuatkan rekod kehadiran.
+        </td>
+      </tr>
+    `;
+
+    showToast(
+      err.code === 'permission-denied'
+        ? 'Akses ditolak. Firebase Security Rules perlu dikemas kini.'
+        : 'Gagal membaca rekod kehadiran: ' + err.message,
+      'danger'
+    );
+  }
+}
+
+    
+// EKSPORT REKOD CUTI CSV - FIREBASE FIRESTORE
+async function exportLeavesToCSV() {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+
+  // SEMAK SESI DAN PERANAN ADMIN
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id ||
+      currentUser.role !== 'ADMIN') {
+
+    showToast('Akses ADMIN diperlukan.', 'danger');
+    return;
+  }
+
+  try {
+
+    const {
+      collection,
+      getDocs
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    // AMBIL SEMUA REKOD CUTI FIRESTORE
+    const snapshot = await getDocs(
+      collection(firebase.db, 'leave_requests')
+    );
+
+    const leaves = snapshot.docs
+      .map(d => ({
+        id: d.id,
+        ...d.data()
+      }))
+      .sort((a, b) =>
+        (b.created_at?.toMillis?.() || 0) -
+        (a.created_at?.toMillis?.() || 0)
+      );
+
+    if (leaves.length === 0) {
+      showToast(
+        'Tiada rekod cuti untuk dieksport.',
+        'warning'
+      );
+      return;
+    }
+
+    // FORMAT CSV YANG SELAMAT
+    function csvCell(value) {
+
+      let text = String(value ?? '');
+
+      // ELAKKAN CSV FORMULA INJECTION
+      if (/^\s*[=+\-@]/.test(text)) {
+        text = "'" + text;
+      }
+
+      return '"' + text.replace(/"/g, '""') + '"';
+    }
+
+    // TAJUK LAJUR CSV
+    const headers = [
+      'ID Permohonan',
+      'Nama Pekerja',
+      'Jenis Cuti',
+      'Tarikh Mula',
+      'Tarikh Akhir',
+      'Bilangan Hari',
+      'Status',
+      'Pelulus'
+    ];
+
+    // SUSUN DATA CSV
+    const rows = leaves.map(r => [
+
+      r.id,
+      r.staff_name || 'Pekerja',
+      formatLeaveType(r.leave_type),
+      r.start_date,
+      r.end_date,
+      r.total_days,
+      r.status,
+      r.decision_by || '-'
+
+    ].map(csvCell).join(','));
+
+    // SEDIAKAN KANDUNGAN CSV
+    const csv = '\uFEFF' + [
+      headers.map(csvCell).join(','),
+      ...rows
+    ].join('\r\n');
+
+    // CIPTA FAIL CSV
+    const blob = new Blob([csv], {
+      type: 'text/csv;charset=utf-8;'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+
+    link.download =
+      'Rekod_Cuti_HRMS_' +
+      new Date().toISOString().split('T')[0] +
+      '.csv';
+
+    // MUAT TURUN FAIL
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // BERSIHKAN URL SEMENTARA
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1000);
+
+    showToast(
+      'Rekod cuti berjaya dieksport daripada Firebase!',
+      'success'
+    );
+
+  } catch (err) {
+
+    console.error('Ralat Eksport CSV Firebase:', err);
+
+    showToast(
+      err.code === 'permission-denied'
+        ? 'Akses ditolak. Firebase Security Rules perlu dikemas kini.'
+        : 'Gagal mengeksport rekod: ' + err.message,
+      'danger'
+    );
+  }
+}
+
+    
+// LOG AUDIT ADMIN - FIREBASE FIRESTORE
+async function loadAdminAuditData() {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+  const tbody = document.getElementById('admin-audit-body');
+
+  // SEMAK SESI DAN PERANAN ADMIN
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id ||
+      currentUser.role !== 'ADMIN') {
+
+    showToast('Akses ADMIN diperlukan.', 'danger');
+    return;
+  }
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="5" style="text-align:center;padding:24px;">
+        Memuatkan log audit daripada Firebase...
+      </td>
+    </tr>
+  `;
+
+  try {
+
+    const {
+      collection,
+      query,
+      orderBy,
+      limit,
+      getDocs
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    // AMBIL 100 LOG AUDIT TERKINI
+    const snapshot = await getDocs(
+      query(
+        collection(firebase.db, 'audit_logs'),
+        orderBy('created_at', 'desc'),
+        limit(100)
+      )
+    );
+
+    // KOSONGKAN JADUAL
+    tbody.replaceChildren();
+
+    // JIKA TIADA LOG AUDIT
+    if (snapshot.empty) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center;padding:24px;">
+            Tiada log audit direkodkan.
+          </td>
+        </tr>
+      `;
+
+      return;
+    }
+
+    // PAPARKAN LOG AUDIT
+    snapshot.forEach(item => {
+
+      const log = item.data();
+      const tr = document.createElement('tr');
+
+      function addCell(value) {
+        const td = document.createElement('td');
+        td.textContent = String(value ?? '-');
+        tr.appendChild(td);
+        return td;
+      }
+
+      // FORMAT MASA MALAYSIA
+      const date = log.created_at?.toDate?.();
+
+      const time = date
+        ? date.toLocaleString('ms-MY', {
+            timeZone: 'Asia/Kuala_Lumpur',
+            hour12: false
+          })
+        : '-';
+
+      // MASA TINDAKAN
+      addCell(time);
+
+      // NAMA PENGGUNA
+      addCell(log.user_name || '-');
+
+      // JENIS AKTIVITI
+      addCell(log.action || '-');
+
+      // KETERANGAN TRANSAKSI
+      addCell(log.details || '-');
+
+      
+// ALAMAT IP / KLIEN
+addCell(log.ip_address || '-');
+
+// MASUKKAN REKOD KE DALAM JADUAL AUDIT
+tbody.appendChild(tr);
+
+});
+
+  } catch (err) {
+
+    console.error('Ralat Log Audit Firebase:', err);
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center;padding:24px;">
+          Gagal memuatkan log audit.
+        </td>
+      </tr>
+    `;
+
+    showToast(
+      err.code === 'permission-denied'
+        ? 'Akses ditolak. Firebase Security Rules perlu dikemas kini.'
+        : 'Gagal membaca log audit: ' + err.message,
+      'danger'
+    );
+  }
+}
+
+    
+// NOTIFIKASI SISTEM - FIREBASE FIRESTORE
+async function refreshNotifications() {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+
+  const badge = document.getElementById('notif-unread-badge');
+  const container = document.getElementById('notif-list-container');
+
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id) {
+    badge.style.display = 'none';
+    return;
+  }
+
+  container.textContent = 'Memuatkan notifikasi...';
+
+  try {
+    const { collection, query, where, getDocs } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    const snapshot = await getDocs(
+      query(
+        collection(firebase.db, 'notifications'),
+        where('user_id', '==', uid)
+      )
+    );
+
+    const notifications = snapshot.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) =>
+        (b.created_at?.toMillis?.() || 0) -
+        (a.created_at?.toMillis?.() || 0)
+      );
+
+    const unread = notifications.filter(
+      n => n.is_read !== true
+    ).length;
+
+    badge.textContent = unread;
+    badge.style.display = unread > 0 ? 'flex' : 'none';
+
+    container.innerHTML = '';
+
+    if (notifications.length === 0) {
+      container.innerHTML = `
+        <li style="padding:20px;text-align:center;">
+          Tiada notifikasi baharu.
+        </li>
+      `;
+      return;
+    }
+
+    notifications.forEach(n => {
+
+      const li = document.createElement('li');
+      li.className = 'notif-item' +
+        (n.is_read !== true ? ' unread' : '');
+
+      const title = document.createElement('strong');
+      title.textContent = n.title || 'Notifikasi Sistem';
+
+      const message = document.createElement('span');
+      message.textContent = n.message || '';
+
+      const time = document.createElement('span');
+      time.className = 'notif-time';
+
+      const date = n.created_at?.toDate?.();
+
+      time.textContent = date
+        ? date.toLocaleString('ms-MY', {
+            timeZone: 'Asia/Kuala_Lumpur'
+          })
+        : '-';
+
+      li.append(title, message, time);
+      container.appendChild(li);
+    });
+
+  } catch (err) {
+    console.error('Ralat Notifikasi Firebase:', err);
+
+    badge.style.display = 'none';
+
+    container.innerHTML = `
+      <li style="padding:20px;text-align:center;">
+        Notifikasi Firebase belum tersedia.
+      </li>
+    `;
+  }
+}
+
+    function toggleNotifications() {
+      const dropdown = document.getElementById('notification-dropdown');
+      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+
+    
+// TANDA SEMUA NOTIFIKASI DIBACA - FIREBASE FIRESTORE
+async function markAllNotificationsAsRead() {
+
+  const firebase = window.hrmsFirebase;
+  const uid = firebase?.auth?.currentUser?.uid;
+
+  if (!firebase?.db || !uid || !currentUser ||
+      uid !== currentUser.id) {
+    showToast('Sila log masuk semula.', 'danger');
+    return;
+  }
+
+  try {
+    const {
+      collection,
+      query,
+      where,
+      getDocs,
+      writeBatch
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js'
+    );
+
+    const snapshot = await getDocs(
+      query(
+        collection(firebase.db, 'notifications'),
+        where('user_id', '==', uid)
+      )
+    );
+
+    const unread = snapshot.docs.filter(
+      item => item.data().is_read !== true
+    );
+
+    // KEMAS KINI SECARA BERKELOMPOK
+    for (let i = 0; i < unread.length; i += 400) {
+
+      const batch = writeBatch(firebase.db);
+
+      unread.slice(i, i + 400).forEach(item => {
+        batch.update(item.ref, {
+          is_read: true
+        });
+      });
+
+      await batch.commit();
+    }
+
+    await refreshNotifications();
+
+    showToast(
+      'Semua notifikasi telah ditandakan sebagai dibaca.',
+      'success'
+    );
+
+  } catch (err) {
+    console.error('Ralat Notifikasi Firebase:', err);
+
+    showToast(
+      'Gagal mengemas kini notifikasi: ' + err.message,
+      'danger'
+    );
+  }
+}
+
+
+// PAUTKAN GOOGLE KEPADA AKAUN STAFF HRMS SEDIA ADA
+async function linkGoogleCurrentUser() {
+
+  const firebase = window.hrmsFirebase;
+  const user = firebase?.auth?.currentUser;
+
+  if (!firebase?.auth || !user || !currentUser ||
+      user.uid !== currentUser.id) {
+    showToast('Sila log masuk semula.', 'danger');
+    return;
+  }
+
+  // SEMAK GOOGLE SUDAH DIPAUTKAN
+  if (user.providerData.some(
+    p => p.providerId === 'google.com'
+  )) {
+    showToast(
+      'Akaun Google sudah dipautkan.',
+      'success'
+    );
+    return;
+  }
+
+  // PASTIKAN EMEL GOOGLE SAMA
+  const confirmed = confirm(
+    'Pautkan Google kepada akaun STAFF HRMS?\n\n' +
+    'Anda mesti memilih akaun Google dengan emel:\n' +
+    user.email
+  );
+
+  if (!confirmed) return;
+
+  const btn = document.getElementById(
+    'btn-link-google'
+  );
+
+  if (btn) btn.disabled = true;
+
+  try {
+
+    const {
+      GoogleAuthProvider,
+      linkWithPopup
+    } = await import(
+      'https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js'
+    );
+
+    const provider = new GoogleAuthProvider();
+
+    provider.setCustomParameters({
+      login_hint: user.email,
+      prompt: 'select_account'
+    });
+
+    // KEKALKAN UID FIREBASE PEKERJA SEDIA ADA
+    const result = await linkWithPopup(
+      user,
+      provider
+    );
+
+    if (result.user.uid !== currentUser.id) {
+      throw new Error('UID tidak sepadan.');
+    }
+
+    showToast(
+      'Akaun Google berjaya dipautkan kepada STAFF HRMS!',
+      'success'
+    );
+
+  } catch (err) {
+
+    console.error('Ralat Pautan Google:', err);
+
+    if (err.code === 'auth/popup-closed-by-user') {
+      showToast('Pautan Google dibatalkan.', 'warning');
+
+    } else if (
+      err.code === 'auth/credential-already-in-use' ||
+      err.code === 'auth/email-already-in-use'
+    ) {
+      showToast(
+        'Akaun Google sudah digunakan oleh akaun Firebase lain.',
+        'danger'
+      );
+
+    } else if (err.code === 'auth/requires-recent-login') {
+      showToast(
+        'Sila log masuk semula sebelum pautkan Google.',
+        'warning'
+      );
+
+    } else {
+      showToast(
+        'Gagal memautkan Google. Sila cuba semula.',
+        'danger'
+      );
+    }
+
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+    // Helpers
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('show');
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+
+      let iconName = 'info';
+      if (type === 'success') iconName = 'check-circle-2';
+      if (type === 'danger') iconName = 'alert-triangle';
+      if (type === 'warning') iconName = 'alert-circle';
+
+      toast.innerHTML = `
+        <i data-lucide="${iconName}" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 4200);
+    }
+
+    function formatLeaveType(type) {
+      const map = {
+        'ANNUAL': 'Cuti Tahunan',
+        'MEDICAL': 'Cuti Sakit',
+        'EMERGENCY': 'Cuti Kecemasan',
+        'UNPAID': 'Cuti Tanpa Gaji',
+        'MATERNITY': 'Cuti Bersalin',
+        'PATERNITY': 'Cuti Paterniti',
+        'OTHER': 'Lain-lain'
+      };
+      return map[type] || type;
+    }
+
+    function getStatusBadge(status) {
+      if (status === 'APPROVED') return `<span class="badge badge-approved"><i data-lucide="check" style="width:12px;height:12px"></i> Diluluskan</span>`;
+      if (status === 'REJECTED') return `<span class="badge badge-rejected"><i data-lucide="x" style="width:12px;height:12px"></i> Ditolak</span>`;
+      if (status === 'CANCELLED') return `<span class="badge badge-cancelled">Dibatalkan</span>`;
+      return `<span class="badge badge-pending"><i data-lucide="clock" style="width:12px;height:12px"></i> Menunggu Semakan</span>`;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      try {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      } catch (e) {
+        return dateStr;
+      }
+    }
+
+    window.addEventListener('click', (e) => {
+      const notifBtn = document.getElementById('notif-btn');
+      const dropdown = document.getElementById('notification-dropdown');
+      if (dropdown && notifBtn && !notifBtn.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
+
+    window.onload = function () {
+  startLiveClock();
+  checkActiveSession();
+  lucide.createIcons();
+};
+  </script>
+</body>
+</html>
