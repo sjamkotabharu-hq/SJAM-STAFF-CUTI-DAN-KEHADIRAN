@@ -534,6 +534,26 @@ body {
       flex: 1;
     }
 
+
+/* BANNER SELAMAT DATANG - DASHBOARD */
+
+.dashboard-welcome-banner {
+  width: 100%;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #eaf4ff;
+  box-shadow: var(--shadow-md);
+}
+
+.dashboard-welcome-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* TAMAT CSS BANNER */
+
 /* Clock-in Panel */
     .clock-in-panel {
       background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
@@ -1465,7 +1485,23 @@ body {
         </div>
       </header>
 
+
 <main class="content-body">
+
+<!-- BANNER SELAMAT DATANG - DASHBOARD SAHAJA -->
+<div
+  id="dashboard-welcome-banner"
+  class="dashboard-welcome-banner"
+  style="display: none;"
+>
+  <img
+    src="./banner-cuti-hrms.png"
+    alt="Selamat Datang ke Sistem Pengurusan Cuti"
+    loading="eager"
+    decoding="async"
+  >
+</div>
+<!-- TAMAT BANNER DASHBOARD -->
 
 <!-- MODULE: REALTIME CLOCK-IN BAR (Asia/Kuala_Lumpur) -->
         <div class="clock-in-panel">
@@ -2811,9 +2847,21 @@ if (entitlementCard) {
       document.getElementById('sidebar').classList.toggle('open');
     }
 
-    // Navigasi Antara Tab
+    
     function navigateTab(tabKey) {
       currentTab = tabKey;
+
+      // PAPAR BANNER PADA DASHBOARD SAHAJA
+      const welcomeBanner = document.getElementById(
+        'dashboard-welcome-banner'
+      );
+
+      if (welcomeBanner) {
+        welcomeBanner.style.display =
+          tabKey === 'dashboard' ? 'block' : 'none';
+      }
+      // TAMAT KAWALAN BANNER
+
       document.querySelectorAll('.tab-view').forEach(view => view.style.display = 'none');
       document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
 
