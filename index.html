@@ -2807,10 +2807,10 @@ if (entitlementCard) {
       );
 
       if (welcomeBanner) {
-        welcomeBanner.style.display =
-          tabKey === 'dashboard' ? 'block' : 'none';
-      }
-      // TAMAT KAWALAN BANNER
+        welcomeBanner.style.display = 'block';
+      }     
+
+ // TAMAT KAWALAN BANNER
 
       document.querySelectorAll('.tab-view').forEach(view => view.style.display = 'none');
       document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
@@ -5848,5 +5848,6 @@ async function linkGoogleCurrentUser() {
   </script>
 </body>
 </html>
+
 
 
