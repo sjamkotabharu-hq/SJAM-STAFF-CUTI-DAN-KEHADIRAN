@@ -1376,14 +1376,7 @@ body {
             <i data-lucide="pie-chart" style="width: 18px; height: 18px;"></i>
             <span>Baki Cuti</span>
           </a>
-        </li>
-        <li class="menu-item">
-          <a class="menu-link" onclick="navigateTab('attendance')">
-            <i data-lucide="clock" style="width: 18px; height: 18px;"></i>
-            <span>Rekod Kehadiran</span>
-          </a>
-        </li>
-        <li class="menu-item">
+                <li class="menu-item">
           <a class="menu-link" onclick="navigateTab('my-profile')">
             <i data-lucide="user" style="width: 18px; height: 18px;"></i>
             <span>Profil Saya</span>
@@ -1669,35 +1662,6 @@ body {
                 </thead>
                 <tbody id="leave-balance-detail-body">
                   <tr><td colspan="5" style="text-align: center; padding: 24px;">Memuatkan pecahan baki cuti...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-<!-- TAB 4: REKOD KEHADIRAN -->
-        <section id="view-attendance" class="tab-view" style="display: none;">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Log Kehadiran Waktu Bertugas Saya</h3>
-              <div class="card-actions">
-                <span style="font-size: 13px; color: var(--slate-500);">Rekod rasmi berasaskan masa pelayan dan tidak boleh diedit manual.</span>
-              </div>
-            </div>
-            <div class="table-container">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Tarikh</th>
-                    <th>Masa Masuk (Clock In)</th>
-                    <th>Masa Tamat (Clock Out)</th>
-                    <th>Tempoh Bertugas</th>
-                    <th>Status</th>
-                    <th>Pengesahan</th>
-                  </tr>
-                </thead>
-                <tbody id="attendance-table-body">
-                  <tr><td colspan="6" style="text-align: center; padding: 24px;">Memuatkan rekod kehadiran...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -2017,11 +1981,7 @@ body {
       </div>
       <span>Mohon</span>
     </div>
-    <div class="mobile-nav-item" onclick="navigateTab('attendance')">
-      <i data-lucide="clock" style="width: 20px; height: 20px;"></i>
-      <span>Hadir</span>
-    </div>
-    <div class="mobile-nav-item" onclick="logout()">
+        <div class="mobile-nav-item" onclick="logout()">
       <i data-lucide="log-out" style="width: 20px; height: 20px;"></i>
       <span>Keluar</span>
     </div>
@@ -2862,8 +2822,7 @@ if (entitlementCard) {
         'dashboard': 'Dashboard Ringkasan',
         'my-leaves': 'Status Permohonan Cuti',
         'leave-balance': 'Baki Cuti Semasa',
-        'attendance': 'Log Kehadiran Waktu Bertugas',
-        'my-profile': 'Profil Peribadi',
+         'my-profile': 'Profil Peribadi',
         'supervisor-approval': 'Kelulusan Cuti Anggota Pasukan',
         'team-calendar': 'Kalendar Cuti Pasukan',
         'admin-employees': 'Pengurusan Pekerja Syarikat',
