@@ -310,19 +310,82 @@
       });
     }
 
+    // Sambungan data terhad untuk fail borang-tuntutan-firebase.js.
+    // Fail cetakan sedia ada terus membaca jadual daripada DOM.
+    window.hrmsReplacementClaims = {
+      getDraft() {
+        const maxDay = dayCount();
+        return {
+          month: state.month,
+          year: state.year,
+          rows: state.rows.map(row => {
+            const entries = {};
+            Object.entries(row.entries).forEach(([dayText, value]) => {
+              const day = Number(dayText);
+              if (!/^\d+$/.test(dayText) || !Number.isInteger(day) ||
+                  day < 1 || day > maxDay || typeof value !== 'string') return;
+              const name = value.trim().replace(/\s+/g, ' ').slice(0, 80);
+              if (name) entries[String(day)] = name;
+            });
+            return { name: row.name.trim().replace(/\s+/g, ' ').slice(0, 80), entries };
+          })
+        };
+      },
+
+      loadDraft(saved) {
+        const month = Number(saved?.month);
+        const year = Number(saved?.year);
+        if (!Number.isInteger(month) || month < 1 || month > 12 ||
+            !Number.isInteger(year) || year < 2020 || year > 2100 ||
+            !Array.isArray(saved?.rows) || saved.rows.length < 1 ||
+            saved.rows.length > 40) {
+          throw new Error('Format rekod Firebase tidak sah.');
+        }
+
+        const maxDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+        const rows = saved.rows.map((item, index) => {
+          if (!item || typeof item !== 'object' || Array.isArray(item)) {
+            throw new Error('Format baris crew Firebase tidak sah.');
+          }
+          const name = typeof item.name === 'string'
+            ? item.name.trim().replace(/\s+/g, ' ').slice(0, 80) : '';
+          const entries = {};
+          if (item.entries && typeof item.entries === 'object' &&
+              !Array.isArray(item.entries)) {
+            Object.entries(item.entries).forEach(([dayText, value]) => {
+              const day = Number(dayText);
+              if (!/^\d+$/.test(dayText) || !Number.isInteger(day) ||
+                  day < 1 || day > maxDay || typeof value !== 'string') return;
+              const cleaned = value.trim().replace(/\s+/g, ' ').slice(0, 80);
+              if (cleaned) entries[day] = cleaned;
+            });
+          }
+          return { id: index + 1, name, entries };
+        });
+
+        if (dialog.open) dialog.close();
+        state.editing = null;
+        state.month = month;
+        state.year = year;
+        state.rows = rows;
+        state.nextRowId = rows.length + 1;
+        monthSelect.value = String(month);
+        yearInput.value = String(year);
+        render();
+      }
+    };
+
     render();
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
   }
 
-  
-  // MODUL TUNTUTAN KHAS ADMIN SAHAJA
-
+  // KAWALAN MODUL: hanya ADMIN yang telah disahkan boleh melihat borang.
+  // Tidak mengubah login, navigateTab, logout atau fungsi Firestore asal.
   function syncReplacementClaimsAdminOnly() {
     const appContainer = document.getElementById('app-container');
     const firebaseUid = window.hrmsFirebase?.auth?.currentUser?.uid;
-
     const isAdmin =
       typeof currentUser !== 'undefined' &&
       currentUser !== null &&
@@ -334,14 +397,14 @@
     let claimModule = document.getElementById('replacement-claim-module');
 
     if (isAdmin) {
+      // Modul dicipta hanya selepas akaun ADMIN berjaya log masuk.
       if (!claimModule) {
         initReplacementClaims();
         claimModule = document.getElementById('replacement-claim-module');
       }
-
       if (claimModule) claimModule.style.display = '';
-
     } else if (claimModule) {
+      // STAFF / SUPERVISOR / log keluar: jangan paparkan borang.
       claimModule.style.display = 'none';
     }
   }
@@ -349,36 +412,23 @@
   function watchReplacementClaimsAdminOnly() {
     const roleLabel = document.getElementById('sidebar-role');
     const appContainer = document.getElementById('app-container');
-
     if (!roleLabel || !appContainer) return;
 
-    const roleObserver = new MutationObserver(
-      syncReplacementClaimsAdminOnly
-    );
-
+    // HRMS asal menukar sidebar-role apabila profil pengguna berjaya dimuatkan.
+    const roleObserver = new MutationObserver(syncReplacementClaimsAdminOnly);
     roleObserver.observe(roleLabel, {
-      childList: true,
-      characterData: true,
-      subtree: true
+      childList: true, characterData: true, subtree: true
     });
-
     roleObserver.observe(appContainer, {
-      attributes: true,
-      attributeFilter: ['style']
+      attributes: true, attributeFilter: ['style']
     });
 
     syncReplacementClaimsAdminOnly();
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener(
-      'DOMContentLoaded',
-      watchReplacementClaimsAdminOnly,
-      { once: true }
-    );
+    document.addEventListener('DOMContentLoaded', watchReplacementClaimsAdminOnly, { once: true });
   } else {
     watchReplacementClaimsAdminOnly();
   }
 })();
-
-
