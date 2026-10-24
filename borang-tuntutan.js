@@ -316,9 +316,69 @@
     }
   }
 
+  
+  // MODUL TUNTUTAN KHAS ADMIN SAHAJA
+
+  function syncReplacementClaimsAdminOnly() {
+    const appContainer = document.getElementById('app-container');
+    const firebaseUid = window.hrmsFirebase?.auth?.currentUser?.uid;
+
+    const isAdmin =
+      typeof currentUser !== 'undefined' &&
+      currentUser !== null &&
+      currentUser.role === 'ADMIN' &&
+      Boolean(firebaseUid) &&
+      firebaseUid === currentUser.id &&
+      appContainer?.style.display === 'flex';
+
+    let claimModule = document.getElementById('replacement-claim-module');
+
+    if (isAdmin) {
+      if (!claimModule) {
+        initReplacementClaims();
+        claimModule = document.getElementById('replacement-claim-module');
+      }
+
+      if (claimModule) claimModule.style.display = '';
+
+    } else if (claimModule) {
+      claimModule.style.display = 'none';
+    }
+  }
+
+  function watchReplacementClaimsAdminOnly() {
+    const roleLabel = document.getElementById('sidebar-role');
+    const appContainer = document.getElementById('app-container');
+
+    if (!roleLabel || !appContainer) return;
+
+    const roleObserver = new MutationObserver(
+      syncReplacementClaimsAdminOnly
+    );
+
+    roleObserver.observe(roleLabel, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+
+    roleObserver.observe(appContainer, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+
+    syncReplacementClaimsAdminOnly();
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initReplacementClaims, { once: true });
+    document.addEventListener(
+      'DOMContentLoaded',
+      watchReplacementClaimsAdminOnly,
+      { once: true }
+    );
   } else {
-    initReplacementClaims();
+    watchReplacementClaimsAdminOnly();
   }
 })();
+
+
